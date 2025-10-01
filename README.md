@@ -33,7 +33,7 @@ git clone https://github.com/guilhermerodrigues17/delivery-tech.git
 cd delivery-tech
 
 # 3. Instale as dependências
-mvn clean install
+./mvnw clean install
 
 # 4. Execute a aplicação spring boot
 ./mvnw spring-boot:run
