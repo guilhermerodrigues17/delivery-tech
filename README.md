@@ -7,12 +7,22 @@ Projeto desenvolvido durante a formação de Arquitetura de Sistemas da FAT. O o
 
 
 ## 🚀 Tecnologias Utilizadas
-Backend: Java 21 e Spring Boot 3
+- **Java 21 LTS** (versão mais recente)
+- Spring Boot 3.5.x
+- Spring Web
+- Spring Data JPA
+- H2 Database
+- Maven
 
-Banco de Dados: H2
+## 📋 Endpoints
+- GET /health - Status da aplicação (inclui versão Java)
+- GET /info - Informações da aplicação
+- GET /h2-console - Console do banco H2
 
 ## ⚙️ Como executar o projeto
 Siga os passos abaixo para rodar o projeto no seu ambiente de desenvolvimento.
+
+**Pré-requisitos:** JDK 21 instalado
 
 ```Bash
 
@@ -25,7 +35,10 @@ cd delivery-tech
 # 3. Instale as dependências
 mvn clean install
 
-# 4. Inicie o servidor
+# 4. Execute a aplicação spring boot
+./mvnw spring-boot:run
+
+# 5. Inicie o servidor após build
 java -jar target/delivery-api-version-SNAPSHOT.jar
 ```
 ## 🤝 Como Contribuir
