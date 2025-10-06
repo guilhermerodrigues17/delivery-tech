@@ -4,10 +4,11 @@ import com.deliverytech.delivery_api.exceptions.DuplicatedRegisterException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.model.Consumer;
 import com.deliverytech.delivery_api.repository.ConsumerRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -27,7 +28,18 @@ public class ConsumerService {
         return consumerRepository.save(consumer);
     }
 
-    public Optional<Consumer> findById(UUID id) {
-        return consumerRepository.findById(id);
+    public Consumer findById(UUID id) {
+        return consumerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado"));
+    }
+
+    public Consumer findByEmail(String email) {
+        return consumerRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado"));
+
+    }
+
+    public List<Consumer> findAllActive() {
+        return consumerRepository.findByActiveTrue();
     }
 }

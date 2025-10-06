@@ -8,6 +8,7 @@ import com.deliverytech.delivery_api.service.ConsumerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("consumer")
+@RequestMapping("/consumers")
 @RequiredArgsConstructor
 public class ConsumerController {
 
@@ -34,13 +35,18 @@ public class ConsumerController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ConsumerResponseDto> findById(@PathVariable String id) {
         UUID uuid = UUID.fromString(id);
-        return consumerService.findById(uuid).map(consumer -> {
-            var response = mapper.toDto(consumer);
-            return ResponseEntity.ok(response);
-        }).orElse(ResponseEntity.notFound().build());
+        Consumer consumer = consumerService.findById(uuid);
+        var response = mapper.toDto(consumer);
+        return ResponseEntity.ok(response);
+    }
 
+    @GetMapping()
+    public ResponseEntity<List<ConsumerResponseDto>> findAllActive() {
+        List<Consumer> consumers = consumerService.findAllActive();
+        var response = consumers.stream().map(mapper::toDto).toList();
+        return ResponseEntity.ok(response);
     }
 }
