@@ -32,7 +32,7 @@ public class ConsumerController {
         Consumer consumer = mapper.toEntity(dto);
         Consumer consumerCreated = consumerService.create(consumer);
         var response = mapper.toDto(consumerCreated);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.created(null).body(response);
     }
 
     @GetMapping("/{id}")
