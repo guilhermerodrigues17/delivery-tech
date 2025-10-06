@@ -1,4 +1,4 @@
-package com.deliverytech.delivery_api.controller.dto;
+package com.deliverytech.delivery_api.dto.response;
 
 import java.util.UUID;
 
@@ -8,6 +8,5 @@ public record ConsumerResponseDto(
         String email,
         String phoneNumber,
         String address,
-        Boolean active
-) {
+        Boolean active) {
 }

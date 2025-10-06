@@ -1,8 +1,8 @@
 package com.deliverytech.delivery_api.controller;
 
-import com.deliverytech.delivery_api.controller.dto.ConsumerRequestDto;
-import com.deliverytech.delivery_api.controller.dto.ConsumerResponseDto;
-import com.deliverytech.delivery_api.controller.mapper.ConsumerMapper;
+import com.deliverytech.delivery_api.dto.request.ConsumerRequestDto;
+import com.deliverytech.delivery_api.dto.response.ConsumerResponseDto;
+import com.deliverytech.delivery_api.mapper.ConsumerMapper;
 import com.deliverytech.delivery_api.model.Consumer;
 import com.deliverytech.delivery_api.service.ConsumerService;
 
