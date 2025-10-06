@@ -5,7 +5,7 @@ import com.deliverytech.delivery_api.dto.response.ConsumerResponseDto;
 import com.deliverytech.delivery_api.mapper.ConsumerMapper;
 import com.deliverytech.delivery_api.model.Consumer;
 import com.deliverytech.delivery_api.service.ConsumerService;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;
@@ -27,7 +27,7 @@ public class ConsumerController {
     private final ConsumerMapper mapper;
 
     @PostMapping
-    public ResponseEntity<ConsumerResponseDto> create(@RequestBody ConsumerRequestDto dto) {
+    public ResponseEntity<ConsumerResponseDto> create(@Valid @RequestBody ConsumerRequestDto dto) {
         Consumer consumer = mapper.toEntity(dto);
         Consumer consumerCreated = consumerService.create(consumer);
         var response = mapper.toDto(consumerCreated);
