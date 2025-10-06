@@ -31,10 +31,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
+    @ExceptionHandler(DuplicatedRegisterException.class)
+    private ResponseEntity<ErrorMessage> handleDuplicatedRegisterException(
+            DuplicatedRegisterException ex) {
+        var errorBody = new ErrorMessage();
+        errorBody.setMessage(ex.getMessage());
+        errorBody.setStatusCode(HttpStatus.CONFLICT.value());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorBody);
+    }
+
     @ExceptionHandler(Exception.class)
     private ResponseEntity<ErrorMessage> handleGenericException(Exception ex) {
         var errorBody = new ErrorMessage();
-        errorBody.setMessage(ex.getMessage());
+        errorBody.setMessage("Erro interno do servidor");
         errorBody.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorBody);
     }
