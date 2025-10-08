@@ -11,7 +11,6 @@ public interface ProductMapper {
 
     @Mapping(target = "restaurant.id", source = "restaurantId")
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "items", ignore = true)
     Product toEntity(ProductRequestDto dto);
 
     @Mapping(target = "restaurantName", source = "restaurant.name")
