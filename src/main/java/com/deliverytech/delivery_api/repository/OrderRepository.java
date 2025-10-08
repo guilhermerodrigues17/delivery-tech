@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 
 public interface OrderRepository extends JpaRepository<Order, UUID> {
-    List<Order> findByClientId(UUID clientId);
+    List<Order> findByConsumerId(UUID consumerId);
 
     List<Order> findByStatus(OrderStatus status);
 
