@@ -1,7 +1,11 @@
 package com.deliverytech.delivery_api.service;
 
+import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.deliverytech.delivery_api.dto.request.ProductRequestDto;
+import com.deliverytech.delivery_api.dto.response.ProductResponseDto;
+import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.mapper.ProductMapper;
 import com.deliverytech.delivery_api.model.Product;
 import com.deliverytech.delivery_api.model.Restaurant;
@@ -10,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProductService {
 
     private final ProductRepository productRepository;
@@ -23,5 +28,13 @@ public class ProductService {
         product.setRestaurant(restaurant);
 
         return productRepository.save(product);
+    }
+
+    @Transactional(readOnly = true)
+    public ProductResponseDto findById(String id) {
+        var product = productRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado"));
+
+        return productMapper.toResponseDto(product);
     }
 }

@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.deliverytech.delivery_api.exceptions.DuplicatedRegisterException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.model.Restaurant;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
 
@@ -27,16 +29,19 @@ public class RestaurantService {
         return restaurantRepository.save(restaurant);
     }
 
+    @Transactional(readOnly = true)
     public Restaurant findById(UUID id) {
         return restaurantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurante não encontrado"));
     }
 
+    @Transactional(readOnly = true)
     public Restaurant findByName(String name) {
         return restaurantRepository.findByName(name)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurante não encontrado"));
     }
 
+    @Transactional(readOnly = true)
     public List<Restaurant> findByCategory(String category) {
         return restaurantRepository.findByCategory(category);
     }

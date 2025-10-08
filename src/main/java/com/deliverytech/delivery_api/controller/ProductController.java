@@ -1,6 +1,8 @@
 package com.deliverytech.delivery_api.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,5 +29,11 @@ public class ProductController {
         var response = productMapper.toResponseDto(product);
 
         return ResponseEntity.created(null).body(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductResponseDto> findProductById(@PathVariable String id) {
+        var response = productService.findById(id);
+        return ResponseEntity.ok(response);
     }
 }
