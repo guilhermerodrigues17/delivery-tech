@@ -31,10 +31,13 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public ProductResponseDto findById(String id) {
-        var product = productRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado"));
-
+    public ProductResponseDto findProductByIdResponse(String id) {
+        var product = findProductEntityById(id);
         return productMapper.toResponseDto(product);
+    }
+
+    public Product findProductEntityById(String id) {
+        return productRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado"));
     }
 }

@@ -33,7 +33,7 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDto> findProductById(@PathVariable String id) {
-        var response = productService.findById(id);
+        var response = productService.findProductByIdResponse(id);
         return ResponseEntity.ok(response);
     }
 }
