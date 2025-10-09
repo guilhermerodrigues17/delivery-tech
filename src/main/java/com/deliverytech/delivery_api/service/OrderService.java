@@ -2,10 +2,12 @@ package com.deliverytech.delivery_api.service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.deliverytech.delivery_api.dto.request.OrderRequestDto;
 import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
+import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.mapper.OrderMapper;
 import com.deliverytech.delivery_api.model.Consumer;
 import com.deliverytech.delivery_api.model.Order;
@@ -71,6 +73,17 @@ public class OrderService {
     @Transactional
     public OrderResponseDto createOrderResponse(OrderRequestDto dto) {
         Order order = createOrder(dto);
+        return orderMapper.toDto(order);
+    }
+
+    public Order findById(String id) {
+        return orderRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado "));
+    }
+
+    @Transactional(readOnly = true)
+    public OrderResponseDto getOrderResponseById(String id) {
+        Order order = findById(id);
         return orderMapper.toDto(order);
     }
 }
