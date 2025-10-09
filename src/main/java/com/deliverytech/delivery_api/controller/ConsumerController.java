@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -44,10 +45,17 @@ public class ConsumerController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<List<ConsumerResponseDto>> findAllActive() {
         List<Consumer> consumers = consumerService.findAllActive();
         var response = consumers.stream().map(mapper::toDto).toList();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(params = "email")
+    public ResponseEntity<ConsumerResponseDto> findConsumerByEmail(@RequestParam String email) {
+        var consumer = consumerService.findByEmail(email);
+        var response = mapper.toDto(consumer);
         return ResponseEntity.ok(response);
     }
 
