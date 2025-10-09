@@ -1,5 +1,6 @@
 package com.deliverytech.delivery_api.service;
 
+import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,5 +40,14 @@ public class ProductService {
     public Product findProductEntityById(String id) {
         return productRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado"));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponseDto> findProductsByRestaurantIdResponse(String restaurantId) {
+        restaurantService.findById(UUID.fromString(restaurantId));
+
+        var products = productRepository.findByRestaurantId(UUID.fromString(restaurantId));
+
+        return products.stream().map(productMapper::toResponseDto).toList();
     }
 }
