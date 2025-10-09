@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,6 +44,13 @@ public class ProductController {
     public ResponseEntity<List<ProductResponseDto>> findProductsByRestaurantId(
             @RequestParam String restaurantId) {
         var response = productService.findProductsByRestaurantIdResponse(restaurantId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductResponseDto> updateProduct(@PathVariable String id,
+            @Valid @RequestBody ProductRequestDto dto) {
+        var response = productService.updateProduct(id, dto);
         return ResponseEntity.ok(response);
     }
 }

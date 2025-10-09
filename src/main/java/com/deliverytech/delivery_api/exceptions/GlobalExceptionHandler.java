@@ -40,6 +40,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorBody);
     }
 
+    @ExceptionHandler(NotAllowedException.class)
+    private ResponseEntity<ErrorMessage> handleNotAllowedException(NotAllowedException ex) {
+        var errorBody = new ErrorMessage();
+        errorBody.setMessage(ex.getMessage());
+        errorBody.setStatusCode(HttpStatus.FORBIDDEN.value());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorBody);
+    }
+
     @ExceptionHandler(Exception.class)
     private ResponseEntity<ErrorMessage> handleGenericException(Exception ex) {
         var errorBody = new ErrorMessage();
