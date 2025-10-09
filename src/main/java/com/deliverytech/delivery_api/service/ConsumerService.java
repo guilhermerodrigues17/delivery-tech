@@ -68,4 +68,11 @@ public class ConsumerService {
 
         return mapper.toDto(updatedConsumer);
     }
+
+    public void softDeleteConsumer(String id) {
+        Consumer existingConsumer = findById(UUID.fromString(id));
+        existingConsumer.setActive(false);
+
+        consumerRepository.save(existingConsumer);
+    }
 }
