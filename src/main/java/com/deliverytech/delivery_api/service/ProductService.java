@@ -70,4 +70,10 @@ public class ProductService {
 
         return productMapper.toResponseDto(response);
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteProduct(String id) {
+        var product = findProductEntityById(id);
+        productRepository.delete(product);
+    }
 }
