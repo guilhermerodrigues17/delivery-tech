@@ -6,8 +6,11 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.deliverytech.delivery_api.dto.request.RestaurantRequestDto;
+import com.deliverytech.delivery_api.dto.response.RestaurantResponseDto;
 import com.deliverytech.delivery_api.exceptions.DuplicatedRegisterException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
+import com.deliverytech.delivery_api.mapper.RestaurantMapper;
 import com.deliverytech.delivery_api.model.Restaurant;
 import com.deliverytech.delivery_api.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +20,10 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
+    private final RestaurantMapper mapper;
 
     public Restaurant createRestaurant(Restaurant restaurant) {
-        var isNameTaken = restaurantRepository.findByName(restaurant.getName()).orElse(null);
-        if (isNameTaken != null) {
+        if (existsByName(restaurant.getName())) {
             throw new DuplicatedRegisterException("Nome de restaurante já está em uso");
 
         }
@@ -39,6 +42,10 @@ public class RestaurantService {
     public Restaurant findByName(String name) {
         return restaurantRepository.findByName(name)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurante não encontrado"));
+    }
+
+    public Boolean existsByName(String name) {
+        return restaurantRepository.existsByName(name);
     }
 
     @Transactional(readOnly = true)
@@ -65,5 +72,25 @@ public class RestaurantService {
 
     public List<Restaurant> findAll() {
         return restaurantRepository.findAll();
+    }
+
+    public RestaurantResponseDto updateRestaurant(String id, RestaurantRequestDto dto) {
+        Restaurant existingRestaurant = findById(UUID.fromString(id));
+
+        if (!existingRestaurant.getName().equals(dto.getName())) {
+            if (existsByName(dto.getName())) {
+                throw new DuplicatedRegisterException("Nome de restaurante já está em uso");
+            }
+            existingRestaurant.setName(dto.getName());
+        }
+
+        existingRestaurant.setCategory(dto.getCategory());
+        existingRestaurant.setAddress(dto.getAddress());
+        existingRestaurant.setPhoneNumber(dto.getPhoneNumber());
+        existingRestaurant.setDeliveryTax(dto.getDeliveryTax());
+
+        var updatedRestaurant = restaurantRepository.save(existingRestaurant);
+
+        return mapper.toDto(updatedRestaurant);
     }
 }

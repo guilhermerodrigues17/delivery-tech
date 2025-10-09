@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -51,9 +52,16 @@ public class RestaurantController {
     }
 
     @GetMapping
-    public ResponseEntity<List<RestaurantResponseDto>> findAll() {
-        var restaurant = restaurantService.findAll();
+    public ResponseEntity<List<RestaurantResponseDto>> findAllActive() {
+        var restaurant = restaurantService.findAllActive();
         var response = restaurant.stream().map(mapper::toDto).toList();
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<RestaurantResponseDto> updateRestaurant(@PathVariable String id,
+            @Valid @RequestBody RestaurantRequestDto dto) {
+        var response = restaurantService.updateRestaurant(id, dto);
         return ResponseEntity.ok(response);
     }
 }

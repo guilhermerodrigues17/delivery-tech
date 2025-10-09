@@ -10,6 +10,8 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, UUID> {
 
     Optional<Restaurant> findByName(String name);
 
+    Boolean existsByName(String name);
+
     List<Restaurant> findByCategory(String category);
 
     List<Restaurant> findByActiveTrue();
