@@ -93,4 +93,11 @@ public class RestaurantService {
 
         return mapper.toDto(updatedRestaurant);
     }
+
+    public void updateStatusActive(String id) {
+        Restaurant existingRestaurant = findById(UUID.fromString(id));
+        existingRestaurant.setActive(!existingRestaurant.getActive());
+
+        restaurantRepository.save(existingRestaurant);
+    }
 }

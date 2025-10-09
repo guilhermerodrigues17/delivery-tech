@@ -3,6 +3,7 @@ package com.deliverytech.delivery_api.controller;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -63,5 +64,11 @@ public class RestaurantController {
             @Valid @RequestBody RestaurantRequestDto dto) {
         var response = restaurantService.updateRestaurant(id, dto);
         return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Void> updateStatusActive(@PathVariable String id) {
+        restaurantService.updateStatusActive(id);
+        return ResponseEntity.noContent().build();
     }
 }
