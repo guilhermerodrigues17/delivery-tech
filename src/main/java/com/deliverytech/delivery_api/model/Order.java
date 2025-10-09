@@ -3,6 +3,7 @@ package com.deliverytech.delivery_api.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,6 +22,9 @@ public class Order {
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime orderDate;
+
+    @LastModifiedDate
+    private LocalDateTime lastModifiedDate;
 
     @Column(nullable = false)
     private String deliveryAddress;

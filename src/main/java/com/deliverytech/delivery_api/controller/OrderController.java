@@ -3,6 +3,7 @@ package com.deliverytech.delivery_api.controller;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.deliverytech.delivery_api.dto.request.OrderRequestDto;
+import com.deliverytech.delivery_api.dto.request.OrderStatusUpdateRequestDto;
 import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
 import com.deliverytech.delivery_api.service.OrderService;
 import jakarta.validation.Valid;
@@ -39,5 +41,12 @@ public class OrderController {
             @RequestParam String consumerId) {
         var ordersResponse = orderService.findByConsumerIdResponse(consumerId);
         return ResponseEntity.ok(ordersResponse);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<OrderResponseDto> updateOrderStatus(@PathVariable String id,
+            @RequestBody OrderStatusUpdateRequestDto dto) {
+        var response = orderService.updateOrderStatus(id, dto.getStatus());
+        return ResponseEntity.ok(response);
     }
 }

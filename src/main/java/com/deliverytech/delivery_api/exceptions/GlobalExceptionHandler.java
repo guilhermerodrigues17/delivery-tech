@@ -48,6 +48,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorBody);
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    private ResponseEntity<ErrorMessage> handleIllegalStateException(IllegalStateException ex) {
+        var errorBody = new ErrorMessage();
+        errorBody.setMessage(ex.getMessage());
+        errorBody.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody);
+    }
+
     @ExceptionHandler(Exception.class)
     private ResponseEntity<ErrorMessage> handleGenericException(Exception ex) {
         var errorBody = new ErrorMessage();

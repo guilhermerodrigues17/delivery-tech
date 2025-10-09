@@ -96,4 +96,20 @@ public class OrderService {
         List<Order> orders = findByConsumerId(consumerId);
         return orders.stream().map(orderMapper::toDto).toList();
     }
+
+    @Transactional
+    public OrderResponseDto updateOrderStatus(String id, OrderStatus newStatus) {
+        Order order = findById(id);
+        var currentStatus = order.getStatus();
+
+        if (!currentStatus.canTransition(newStatus)) {
+            throw new IllegalStateException(
+                    "Não é possível mudar de " + currentStatus + " para " + newStatus);
+        }
+
+        order.setStatus(newStatus);
+        var response = orderRepository.save(order);
+
+        return orderMapper.toDto(response);
+    }
 }
