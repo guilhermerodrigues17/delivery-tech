@@ -86,4 +86,14 @@ public class OrderService {
         Order order = findById(id);
         return orderMapper.toDto(order);
     }
+
+    public List<Order> findByConsumerId(String consumerId) {
+        return orderRepository.findByConsumerId(UUID.fromString(consumerId));
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponseDto> findByConsumerIdResponse(String consumerId) {
+        List<Order> orders = findByConsumerId(consumerId);
+        return orders.stream().map(orderMapper::toDto).toList();
+    }
 }
