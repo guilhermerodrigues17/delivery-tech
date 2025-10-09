@@ -10,5 +10,7 @@ import java.util.UUID;
 public interface ConsumerRepository extends JpaRepository<Consumer, UUID> {
     Optional<Consumer> findByEmail(String email);
 
+    Boolean existsByEmail(String email);
+
     List<Consumer> findByActiveTrue();
 }

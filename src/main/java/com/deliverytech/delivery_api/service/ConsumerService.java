@@ -1,10 +1,12 @@
 package com.deliverytech.delivery_api.service;
 
+import com.deliverytech.delivery_api.dto.request.ConsumerRequestDto;
+import com.deliverytech.delivery_api.dto.response.ConsumerResponseDto;
 import com.deliverytech.delivery_api.exceptions.DuplicatedRegisterException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
+import com.deliverytech.delivery_api.mapper.ConsumerMapper;
 import com.deliverytech.delivery_api.model.Consumer;
 import com.deliverytech.delivery_api.repository.ConsumerRepository;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +18,10 @@ import java.util.UUID;
 public class ConsumerService {
 
     private final ConsumerRepository consumerRepository;
+    private final ConsumerMapper mapper;
 
     public Consumer create(Consumer consumer) {
-        var isEmailInUse =
-                consumerRepository.findByEmail(consumer.getEmail()).orElseGet(() -> null);
-        if (isEmailInUse != null) {
+        if (existsByEmail(consumer.getEmail())) {
             throw new DuplicatedRegisterException("E-mail já está em uso");
         }
 
@@ -39,7 +40,32 @@ public class ConsumerService {
 
     }
 
+    public Boolean existsByEmail(String email) {
+        return consumerRepository.existsByEmail(email);
+    }
+
     public List<Consumer> findAllActive() {
         return consumerRepository.findByActiveTrue();
+    }
+
+    public ConsumerResponseDto updateConsumer(String id, ConsumerRequestDto dto) {
+        Consumer existingConsumer = findById(UUID.fromString(id));
+
+        if (!existingConsumer.getEmail().equals(dto.getEmail())) {
+
+            if (existsByEmail(dto.getEmail())) {
+                throw new DuplicatedRegisterException("E-mail já está em uso");
+            }
+
+            existingConsumer.setEmail(dto.getEmail());
+        }
+
+        existingConsumer.setName(dto.getName());
+        existingConsumer.setPhoneNumber(dto.getPhoneNumber());
+        existingConsumer.setAddress(dto.getAddress());
+
+        var updatedConsumer = consumerRepository.save(existingConsumer);
+
+        return mapper.toDto(updatedConsumer);
     }
 }
