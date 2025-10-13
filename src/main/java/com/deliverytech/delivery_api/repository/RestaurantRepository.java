@@ -1,5 +1,6 @@
 package com.deliverytech.delivery_api.repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,4 +17,7 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, UUID> {
 
     List<Restaurant> findByActiveTrue();
 
+    List<Restaurant> findByDeliveryTaxLessThanEqual(BigDecimal deliveryTax);
+
+    List<Restaurant> findTop5ByOrderByNameAsc();
 }

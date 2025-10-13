@@ -13,4 +13,6 @@ public interface ConsumerRepository extends JpaRepository<Consumer, UUID> {
     Boolean existsByEmail(String email);
 
     List<Consumer> findByActiveTrue();
+
+    List<Consumer> findByNameContainingIgnoreCase(String name);
 }
