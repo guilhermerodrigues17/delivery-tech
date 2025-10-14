@@ -1,0 +1,1197 @@
+{
+	"info": {
+		"_postman_id": "a6d1c26a-bb20-49fb-aa03-6b3b09914a9c",
+		"name": "delivery-tech",
+		"description": "# 🚀 Get started here\n\nThis template guides you through CRUD operations (GET, POST, PUT, DELETE), variables, and tests.\n\n## 🔖 **How to use this template**\n\n#### **Step 1: Send requests**\n\nRESTful APIs allow you to perform CRUD operations using the POST, GET, PUT, and DELETE HTTP methods.\n\nThis collection contains each of these [request](https://learning.postman.com/docs/sending-requests/requests/) types. Open each request and click \"Send\" to see what happens.\n\n#### **Step 2: View responses**\n\nObserve the response tab for status code (200 OK), response time, and size.\n\n#### **Step 3: Send new Body data**\n\nUpdate or add new data in \"Body\" in the POST request. Typically, Body data is also used in PUT request.\n\n```\n{\n    \"name\": \"Add your name in the body\"\n}\n\n ```\n\n#### **Step 4: Update the variable**\n\nVariables enable you to store and reuse values in Postman. We have created a [variable](https://learning.postman.com/docs/sending-requests/variables/) called `base_url` with the sample request [https://postman-api-learner.glitch.me](https://postman-api-learner.glitch.me). Replace it with your API endpoint to customize this collection.\n\n#### **Step 5: Add tests in the \"Scripts\" tab**\n\nAdding tests to your requests can help you confirm that your API is working as expected. You can write test scripts in JavaScript and view the output in the \"Test Results\" tab.\n\n<img src=\"https://content.pstmn.io/fa30ea0a-373d-4545-a668-e7b283cca343/aW1hZ2UucG5n\" alt=\"\" height=\"1530\" width=\"2162\">\n\n## 💪 Pro tips\n\n- Use folders to group related requests and organize the collection.\n    \n- Add more [scripts](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/) to verify if the API works as expected and execute workflows.\n    \n\n## 💡Related templates\n\n[API testing basics](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9a37a28-055b-49cd-8c7e-97494a21eb54&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[API documentation](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9c28f47-1253-44af-a2f3-20dce4da1f18&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[Authorization methods](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=31a9a6ed-4cdf-4ced-984c-d12c9aec1c27&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "46943156",
+		"_collection_link": "https://guilhermerodrigues17-94703ace-9620165.postman.co/workspace/Guilherme-Rodrigues-Machado's-W~a1d67475-11a5-4f71-8c0d-013db3a3b018/collection/46943156-a6d1c26a-bb20-49fb-aa03-6b3b09914a9c?action=share&source=collection_link&creator=46943156"
+	},
+	"item": [
+		{
+			"name": "Consumer",
+			"item": [
+				{
+					"name": "Create consumer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"pm.environment.set(\"consumerId\", response.id);\r",
+									"\r",
+									"console.log(\"Consumer ID salvo: \", pm.environment.get(\"consumerId\"));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Guilherme Rodrigues\",\r\n    \"email\": \"guilherme@email.com\",\r\n    \"phoneNumber\": \"11912345678\",\r\n    \"address\": \"Rua Fictícia, 1000\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/consumers",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"consumers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find consumer by ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/consumers/:id",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"consumers",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "da2371a3-7ef4-4f0f-8774-2bc040c01a33"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find consumer by e-mail",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/consumers?email=guilhermerodriguesm23@gmail.com",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"consumers"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "guilhermerodriguesm23@gmail.com"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find all active consumers",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/consumers",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"consumers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update consumer",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Guilherme Rodrigues\",\r\n    \"email\": \"guilhermerodriguesm23@gmail.com\",\r\n    \"phoneNumber\": \"(11)954249112\",\r\n    \"address\": \"Rua Piraju, 197\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/consumers/:id",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"consumers",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "5b8bdcf8-2ba4-45d1-9a65-6d2b34a7ce9e"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Soft delete consumer",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{LOCAL_HOST}}/consumers/:id",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"consumers",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "da2371a3-7ef4-4f0f-8774-2bc040c01a33"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Restaurant",
+			"item": [
+				{
+					"name": "Create restaurant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"pm.environment.set(\"restaurantId\", response.id);\r",
+									"\r",
+									"console.log(\"Restaurant ID salvo: \", pm.environment.get(\"restaurantId\"));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Bullguer\",\r\n    \"category\": \"Hamburguer artesanal\",\r\n    \"address\": \"Shopping Tamboré, S/N\",\r\n    \"phoneNumber\": \"11111111111\",\r\n    \"deliveryTax\": 18.99\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/restaurants",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"restaurants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find restaurant by ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/restaurants/:id",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"restaurants",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "eab997e3-13a6-465b-9efb-306f62a27ab3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find all active restaurants",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/restaurants",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"restaurants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search restaurants by name or category",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/restaurants/search?name=Comidas&category=brasileira",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"restaurants",
+								"search"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "Comidas"
+								},
+								{
+									"key": "category",
+									"value": "brasileira"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update restaurant",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Bullguer\",\r\n    \"category\": \"Lanches e Sobremesas\",\r\n    \"address\": \"Avenida Ipiranga, S/N\",\r\n    \"phoneNumber\": \"11111111111\",\r\n    \"deliveryTax\": 18.99\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/restaurants/:id",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"restaurants",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "050a4a2d-90b4-4a1b-82d8-9111de60f604"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update status active",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/restaurants/:id",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"restaurants",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "eab997e3-13a6-465b-9efb-306f62a27ab3"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Product",
+			"item": [
+				{
+					"name": "Create product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"pm.environment.set(\"productId\", response.id); // only one product per env set\r",
+									"\r",
+									"console.log(\"Product ID salvo: \", pm.environment.get(\"productId\"));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"restaurantId\": \"{{restaurantId}}\",\r\n   \"name\": \"Chicken Hot Honey\",\r\n   \"description\": \"Lanche de frango com queijo, molho picante e mel\",\r\n   \"price\": 39.99,\r\n   \"category\": \"Hamburguers de frango\",\r\n   \"available\": true \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/products",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find product by ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"restaurantId\": \"c9f8e03a-eae5-40eb-bcb7-810f5818b313\",\r\n   \"name\": \"Cheeseburguer clássico\",\r\n   \"description\": \"Lanche com pão brioche, 100g de carne no estilo smash e duas fatias de queijo cheddar\",\r\n   \"price\": 39.99,\r\n   \"category\": \"Hamburguers de carne\",\r\n   \"available\": true \r\n}"
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/products/:id",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"products",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3a7e636f-0e82-4513-a890-7d7ce800f5d2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find product by restaurant ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/products?restaurantId=aad922c8-6ee7-4ddf-87eb-d0920be370d1",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "restaurantId",
+									"value": "aad922c8-6ee7-4ddf-87eb-d0920be370d1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update product",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"restaurantId\": \"0b351b2a-a692-4124-a42f-d45c49c1318d\",\r\n    \"name\": \"Chicken Hot Honey do 2\",\r\n    \"description\": \"Lanche de frango com molho picante e mel\",\r\n    \"price\": 46.99,\r\n    \"category\": \"Hamburguers de frango\",\r\n    \"available\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/products/:id",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"products",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "bb58a235-4565-450f-8db0-a8c92fff649a"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete product",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{LOCAL_HOST}}/products/:id",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"products",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3a7e636f-0e82-4513-a890-7d7ce800f5d2"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Order",
+			"item": [
+				{
+					"name": "Create order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"pm.environment.set(\"orderId\", response.id);\r",
+									"\r",
+									"console.log(\"Order ID salvo: \", pm.environment.get(\"orderId\"));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"consumerId\": \"{{consumerId}}\",\r\n    \"restaurantId\": \"{{restaurantId}}\",\r\n    \"items\": [\r\n        {\r\n            \"productId\": \"{{productId}}\",\r\n            \"quantity\": 2\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/orders",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find order by ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/orders/:id",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"orders",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "a20f34d6-bed1-4aa4-ac8c-fec664f4ddf9"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find order by consumer ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{LOCAL_HOST}}/orders?consumerId=3eed2353-ba65-4e9f-b25f-f4959561a8a1",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"orders"
+							],
+							"query": [
+								{
+									"key": "consumerId",
+									"value": "3eed2353-ba65-4e9f-b25f-f4959561a8a1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update order status",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"status\": \"CANCELED\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/orders/:id",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"orders",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{orderId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Flux - Create order E2E",
+			"item": [
+				{
+					"name": "Create consumer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"pm.environment.set(\"consumerId\", response.id);\r",
+									"\r",
+									"console.log(\"Consumer ID salvo: \", pm.environment.get(\"consumerId\"));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Guilherme Rodrigues\",\r\n    \"email\": \"guilherme@gmail.com\",\r\n    \"phoneNumber\": \"11912345678\",\r\n    \"address\": \"R Fictícia, 1000\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/consumers",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"consumers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create restaurant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"pm.environment.set(\"restaurantId\", response.id);\r",
+									"\r",
+									"console.log(\"Restaurant ID salvo: \", pm.environment.get(\"restaurantId\"));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Bullguer\",\r\n    \"category\": \"Hamburguer artesanal\",\r\n    \"address\": \"Shopping Tamboré, S/N\",\r\n    \"phoneNumber\": \"11111111111\",\r\n    \"deliveryTax\": 18.99\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/restaurants",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"restaurants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create product 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"pm.environment.set(\"productId\", response.id);\r",
+									"\r",
+									"console.log(\"Product ID salvo: \", pm.environment.get(\"productId\"));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"restaurantId\": \"{{restaurantId}}\",\r\n   \"name\": \"Chicken Hot Honey\",\r\n   \"description\": \"Lanche de frango com queijo, molho picante e mel\",\r\n   \"price\": 39.99,\r\n   \"category\": \"Hamburguers de frango\",\r\n   \"available\": true \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/products",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create product 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"pm.environment.set(\"productId2\", response.id);\r",
+									"\r",
+									"console.log(\"Product ID salvo: \", pm.environment.get(\"productId2\"));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"restaurantId\": \"{{restaurantId}}\",\r\n   \"name\": \"Lumberjack - Ao ponto\",\r\n   \"description\": \"Lanche de carne de 100g com queijo, molho Bullguer e picles\",\r\n   \"price\": 49.99,\r\n   \"category\": \"Hamburguers de carne\",\r\n   \"available\": true \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/products",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create product 3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"pm.environment.set(\"productId3\", response.id);\r",
+									"\r",
+									"console.log(\"Product ID salvo: \", pm.environment.get(\"productId3\"));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"restaurantId\": \"{{restaurantId}}\",\r\n   \"name\": \"Pepsi Original\",\r\n   \"description\": \"Refrigerante de 300ml\",\r\n   \"price\": 9.99,\r\n   \"category\": \"Bebidas\",\r\n   \"available\": true \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/products",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"pm.environment.set(\"orderId\", response.id);\r",
+									"\r",
+									"console.log(\"Order ID salvo: \", pm.environment.get(\"orderId\"));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"consumerId\": \"{{consumerId}}\",\r\n    \"restaurantId\": \"{{restaurantId}}\",\r\n    \"items\": [\r\n        {\r\n            \"productId\": \"{{productId}}\",\r\n            \"quantity\": 1\r\n        },\r\n        {\r\n            \"productId\": \"{{productId2}}\",\r\n            \"quantity\": 1\r\n        },\r\n        {\r\n            \"productId\": \"{{productId3}}\",\r\n            \"quantity\": 1\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/orders",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update order status",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"status\": \"PREPARING\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/orders/:id",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"orders",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{orderId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "This folder provides automation of the application's resource **creation flow**, encompassing the **end-to-end flow**, that is, from **customer registration** to **placing the order**.\n\nTo execute all requests automatically, just press `\"...\"` and `\"Run\"`. The requests are already in the correct position!"
+		},
+		{
+			"name": "Flux - Just create order",
+			"item": [
+				{
+					"name": "Create order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"pm.environment.set(\"orderId\", response.id);\r",
+									"\r",
+									"console.log(\"Order ID salvo: \", pm.environment.get(\"orderId\"));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"consumerId\": \"{{consumerId}}\",\r\n    \"restaurantId\": \"{{restaurantId}}\",\r\n    \"items\": [\r\n        {\r\n            \"productId\": \"{{productId}}\",\r\n            \"quantity\": 1\r\n        },\r\n        {\r\n            \"productId\": \"{{productId2}}\",\r\n            \"quantity\": 1\r\n        },\r\n        {\r\n            \"productId\": \"{{productId3}}\",\r\n            \"quantity\": 1\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/orders",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update order status",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"status\": \"PREPARING\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/orders/:id",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"orders",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{orderId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "This folder provides an **automated flow** of requests **to create an order**, taking into account that customer, restaurant, and product data has been **previously created**.\n\nTo execute all requests automatically, just press `\"...\"` and `\"Run\"`. The requests are already in the correct position!"
+		},
+		{
+			"name": "Health",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{LOCAL_HOST}}/health",
+					"host": [
+						"{{LOCAL_HOST}}"
+					],
+					"path": [
+						"health"
+					]
+				},
+				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+			},
+			"response": []
+		},
+		{
+			"name": "Info",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{LOCAL_HOST}}/info",
+					"host": [
+						"{{LOCAL_HOST}}"
+					],
+					"path": [
+						"info"
+					]
+				},
+				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "id",
+			"value": "1"
+		},
+		{
+			"key": "base_url",
+			"value": "https://template.postman-echo.com"
+		}
+	]
+}
