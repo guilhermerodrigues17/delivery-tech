@@ -42,39 +42,39 @@ clientes, restaurantes, produtos e pedidos.
 
 ### Consumers (Clientes)
 
-- ``POST /consumers``: Cria um novo cliente;
-- ``GET /consumers/{id}``: Busca um cliente pelo ID;
-- ``GET /consumers``: Lista todos os clientes ativos;
-- ``GET /consumers?email={email}``: Busca um cliente pelo email;
-- ``PUT /consumers/{id}``: Atualiza os dados de um cliente;
-- ``DELETE /consumers/{id}``: Desativa um cliente (soft delete).
+- ``POST /consumers`` - Cria um novo cliente;
+- ``GET /consumers/{id}`` - Busca um cliente pelo ID;
+- ``GET /consumers`` - Lista todos os clientes ativos;
+- ``GET /consumers?email={email}`` - Busca um cliente pelo email;
+- ``PUT /consumers/{id}`` - Atualiza os dados de um cliente;
+- ``DELETE /consumers/{id}`` - Desativa um cliente (soft delete).
 
 ### Restaurants (Restaurantes)
 
-- ``POST /restaurants``: Cria um novo restaurante;
-- ``GET /restaurants/{id}``: Busca um restaurante pelo ID;
-- ``GET /restaurants``: Lista todos os restaurantes ativos;
-- ``GET /restaurants/search?name={name}&category={category}``: Busca
+- ``POST /restaurants`` - Cria um novo restaurante;
+- ``GET /restaurants/{id}`` - Busca um restaurante pelo ID;
+- ``GET /restaurants`` - Lista todos os restaurantes ativos;
+- ``GET /restaurants/search?name={name}&category={category}`` - Busca
   restaurantes por nome e/ou categoria
-- ``PUT /restaurants/{id}``: Atualiza os dados de um restaurante;
-- ``PATCH /restaurants/{id}``: Ativa ou desativa um restaurante.
+- ``PUT /restaurants/{id}`` - Atualiza os dados de um restaurante;
+- ``PATCH /restaurants/{id}`` - Ativa ou desativa um restaurante.
 
 ### Products (Produtos)
 
-- ``POST /products``: Cria um novo produto para um restaurante;
-- ``GET /products/{id}``: Busca um produto pelo ID;
-- ``GET /products?restaurantId={restaurantId}``: Lista os produtos de um
+- ``POST /products`` - Cria um novo produto para um restaurante;
+- ``GET /products/{id}`` - Busca um produto pelo ID;
+- ``GET /products?restaurantId={restaurantId}`` - Lista os produtos de um
   restaurante específico;
-- ``PUT /products/{id}``: Atualiza os dados de um produto;
-- ``DELETE /products/{id}``: Deleta um produto.
+- ``PUT /products/{id}`` - Atualiza os dados de um produto;
+- ``DELETE /products/{id}`` - Deleta um produto.
 
 ### Orders (Pedidos)
 
-- ``POST /orders``: Cria um novo pedido;
-- ``GET /orders/{id}``: Busca um pedido pelo ID;
-- ``GET /orders?consumerId={consumerId}``: Lista os pedidos de um cliente
+- ``POST /orders`` - Cria um novo pedido;
+- ``GET /orders/{id}`` - Busca um pedido pelo ID;
+- ``GET /orders?consumerId={consumerId}`` - Lista os pedidos de um cliente
   específico;
-- ``PATCH /orders/{id}``: Atualiza o status de um pedido.
+- ``PATCH /orders/{id}`` - Atualiza o status de um pedido.
 
 ## ⚙️ Como executar o projeto
 
@@ -107,12 +107,8 @@ Contribuições são bem-vindas! Se você tiver ideias para melhorias ou encontr
 algum problema, sinta-se à vontade para abrir uma issue ou enviar um pull
 request.
 
-- Faça um fork do projeto.
-
-- Crie uma nova branch (git checkout -b feature/sua-feature).
-
-- Faça o commit de suas alterações (git commit -m 'Adiciona nova feature').
-
-- Envie para a sua branch (git push origin feature/sua-feature).
-
+- Faça um fork do projeto;
+- Crie uma nova branch (git checkout -b feature/sua-feature);
+- Faça o commit de suas alterações (git commit -m 'Adiciona nova feature');
+- Envie para a sua branch (git push origin feature/sua-feature);
 - Abra um Pull Request.
