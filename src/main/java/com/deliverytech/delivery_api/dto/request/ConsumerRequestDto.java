@@ -16,7 +16,7 @@ public class ConsumerRequestDto {
     private String email;
 
     @NotBlank(message = "Telefone não pode estar em branco")
-    @Size(min = 8, max = 15, message = "Telefone deve ter entre 8 e 20 caracteres")
+    @Size(min = 8, max = 15, message = "Telefone deve ter entre 8 e 15 caracteres")
     private String phoneNumber;
 
     @NotBlank(message = "Endereço é obrigatório")

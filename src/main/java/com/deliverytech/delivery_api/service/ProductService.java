@@ -46,9 +46,9 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public List<ProductResponseDto> findProductsByRestaurantIdResponse(String restaurantId) {
-        restaurantService.findById(UUID.fromString(restaurantId));
+        var restaurant = restaurantService.findById(UUID.fromString(restaurantId));
 
-        var products = productRepository.findByRestaurantId(UUID.fromString(restaurantId));
+        var products = productRepository.findByRestaurantId(restaurant.getId());
 
         return products.stream().map(productMapper::toResponseDto).toList();
     }
