@@ -1,11 +1,12 @@
 package com.deliverytech.delivery_api.repository;
 
+import com.deliverytech.delivery_api.model.Restaurant;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.jpa.repository.JpaRepository;
-import com.deliverytech.delivery_api.model.Restaurant;
 
 public interface RestaurantRepository extends JpaRepository<Restaurant, UUID> {
 

@@ -1,16 +1,5 @@
 package com.deliverytech.delivery_api.controller;
 
-import java.util.List;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import com.deliverytech.delivery_api.dto.request.ProductRequestDto;
 import com.deliverytech.delivery_api.dto.response.ProductResponseDto;
 import com.deliverytech.delivery_api.mapper.ProductMapper;
@@ -18,6 +7,10 @@ import com.deliverytech.delivery_api.model.Product;
 import com.deliverytech.delivery_api.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/products")
@@ -50,7 +43,7 @@ public class ProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDto> updateProduct(@PathVariable String id,
-            @Valid @RequestBody ProductRequestDto dto) {
+                                                            @Valid @RequestBody ProductRequestDto dto) {
         var response = productService.updateProduct(id, dto);
         return ResponseEntity.ok(response);
     }

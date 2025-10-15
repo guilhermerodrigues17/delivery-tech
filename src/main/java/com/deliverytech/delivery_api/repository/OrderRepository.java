@@ -1,16 +1,15 @@
 package com.deliverytech.delivery_api.repository;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.data.jpa.repository.JpaRepository;
 import com.deliverytech.delivery_api.model.Order;
 import com.deliverytech.delivery_api.model.OrderStatus;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 public interface OrderRepository extends JpaRepository<Order, UUID> {
     List<Order> findByConsumerId(UUID consumerId);

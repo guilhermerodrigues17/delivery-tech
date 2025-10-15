@@ -1,23 +1,19 @@
 package com.deliverytech.delivery_api.config;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
-import com.deliverytech.delivery_api.model.Consumer;
-import com.deliverytech.delivery_api.model.Order;
-import com.deliverytech.delivery_api.model.OrderItem;
-import com.deliverytech.delivery_api.model.OrderStatus;
-import com.deliverytech.delivery_api.model.Product;
-import com.deliverytech.delivery_api.model.Restaurant;
+import com.deliverytech.delivery_api.model.*;
 import com.deliverytech.delivery_api.repository.ConsumerRepository;
 import com.deliverytech.delivery_api.repository.OrderRepository;
 import com.deliverytech.delivery_api.repository.ProductRepository;
 import com.deliverytech.delivery_api.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -83,7 +79,7 @@ public class DataLoader implements CommandLineRunner {
         r1.setName("Lanchonete A");
         r1.setCategory("Fast Food");
         r1.setAddress("Rua A, 123");
-        r1.setDeliveryTax(new BigDecimal(5.00));
+        r1.setDeliveryTax(new BigDecimal("5.00"));
         r1.setPhoneNumber("11111111112");
         r1.setActive(true);
 
@@ -91,7 +87,7 @@ public class DataLoader implements CommandLineRunner {
         r2.setName("Lanchonete B");
         r2.setCategory("Italiana");
         r2.setAddress("Rua B, 123");
-        r2.setDeliveryTax(new BigDecimal(10.00));
+        r2.setDeliveryTax(new BigDecimal("10.00"));
         r2.setPhoneNumber("11111111113");
         r2.setActive(true);
 
@@ -114,7 +110,7 @@ public class DataLoader implements CommandLineRunner {
         p1.setDescription("Lanche com pão, carne e queijo");
         p1.setCategory("Hamburguer de carne");
         p1.setAvailable(true);
-        p1.setPrice(new BigDecimal(29.99));
+        p1.setPrice(new BigDecimal("29.99"));
         p1.setRestaurant(r1);
 
         Product p2 = new Product();
@@ -122,7 +118,7 @@ public class DataLoader implements CommandLineRunner {
         p2.setDescription("Batatas cortadas no formato crinkles fritas com sal");
         p2.setCategory("Acompanhamentos");
         p2.setAvailable(true);
-        p2.setPrice(new BigDecimal(12.99));
+        p2.setPrice(new BigDecimal("12.99"));
         p2.setRestaurant(r1);
 
         Product p3 = new Product();
@@ -130,7 +126,7 @@ public class DataLoader implements CommandLineRunner {
         p3.setDescription("Refrigerante de lata - 300mL");
         p3.setCategory("Bebidas");
         p3.setAvailable(true);
-        p3.setPrice(new BigDecimal(9.99));
+        p3.setPrice(new BigDecimal("9.99"));
         p3.setRestaurant(r1);
 
         Product p4 = new Product();
@@ -138,7 +134,7 @@ public class DataLoader implements CommandLineRunner {
         p4.setDescription("300g de massa com molho fresco de tomates italianos");
         p4.setCategory("Massas");
         p4.setAvailable(true);
-        p4.setPrice(new BigDecimal(39.99));
+        p4.setPrice(new BigDecimal("39.99"));
         p4.setRestaurant(r2);
 
         Product p5 = new Product();
@@ -146,7 +142,7 @@ public class DataLoader implements CommandLineRunner {
         p5.setDescription("Sobremesa italiana saborosa");
         p5.setCategory("Sobremesas");
         p5.setAvailable(true);
-        p5.setPrice(new BigDecimal(18.99));
+        p5.setPrice(new BigDecimal("18.99"));
         p5.setRestaurant(r2);
 
         productRepository.saveAll(Arrays.asList(p1, p2, p3, p4, p5));
@@ -261,7 +257,7 @@ public class DataLoader implements CommandLineRunner {
         var consumerByEmail = consumerRepository.findByEmail("mateus@email.com");
         System.out.println("\nCliente por email: "
                 + (consumerByEmail.isPresent() ? consumerByEmail.get().getName()
-                        : "Não encontrado"));
+                : "Não encontrado"));
 
         var activeConsumers = consumerRepository.findByActiveTrue();
         System.out.println("\nClientes ativos: " + activeConsumers.size());
@@ -278,7 +274,7 @@ public class DataLoader implements CommandLineRunner {
         var restaurantByName = restaurantRepository.findByName("Lanchonete A");
         System.out.println("\nRestaurante por nome: "
                 + (restaurantByName.isPresent() ? restaurantByName.get().getName()
-                        : "Não encontrado"));
+                : "Não encontrado"));
 
         var restaurantExistsByName = restaurantRepository.existsByName("Lanchonete B");
         System.out.println(
@@ -291,7 +287,7 @@ public class DataLoader implements CommandLineRunner {
         System.out.println("\nRestaurantes ativos: " + activeRestaurants.size());
 
         var restaurantsByDeliveryTax =
-                restaurantRepository.findByDeliveryTaxLessThanEqual(new BigDecimal(10.00));
+                restaurantRepository.findByDeliveryTaxLessThanEqual(new BigDecimal("10.00"));
         System.out.println("\nRestaurantes com taxa de entrega menor ou igual a R$10,00: "
                 + restaurantsByDeliveryTax.size());
 
@@ -332,7 +328,7 @@ public class DataLoader implements CommandLineRunner {
         var availableProducts = productRepository.findByAvailableTrue();
         System.out.println("\nProdutos disponíveis: " + availableProducts.size());
 
-        var productsByPrice = productRepository.findByPriceLessThanEqual(new BigDecimal(20.00));
+        var productsByPrice = productRepository.findByPriceLessThanEqual(new BigDecimal("20.00"));
         System.out.println(
                 "\nProdutos com preço menor ou igual a R$20,00: " + productsByPrice.size());
 

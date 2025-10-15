@@ -40,5 +40,6 @@ public class HealthController {
             String developer,
             String javaVersion,
             String framework
-    ) {}
+    ) {
+    }
 }

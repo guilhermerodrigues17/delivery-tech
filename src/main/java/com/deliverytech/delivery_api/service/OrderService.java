@@ -1,22 +1,18 @@
 package com.deliverytech.delivery_api.service;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.UUID;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import com.deliverytech.delivery_api.dto.request.OrderRequestDto;
 import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.mapper.OrderMapper;
-import com.deliverytech.delivery_api.model.Consumer;
-import com.deliverytech.delivery_api.model.Order;
-import com.deliverytech.delivery_api.model.OrderItem;
-import com.deliverytech.delivery_api.model.OrderStatus;
-import com.deliverytech.delivery_api.model.Product;
-import com.deliverytech.delivery_api.model.Restaurant;
+import com.deliverytech.delivery_api.model.*;
 import com.deliverytech.delivery_api.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor

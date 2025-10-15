@@ -1,10 +1,10 @@
 package com.deliverytech.delivery_api.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import com.deliverytech.delivery_api.dto.request.RestaurantRequestDto;
 import com.deliverytech.delivery_api.dto.response.RestaurantResponseDto;
 import com.deliverytech.delivery_api.model.Restaurant;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface RestaurantMapper {

@@ -1,9 +1,10 @@
 package com.deliverytech.delivery_api.dto.request;
 
-import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
+
+import java.util.UUID;
 
 @Data
 public class OrderItemRequestDto {
@@ -11,6 +12,6 @@ public class OrderItemRequestDto {
     private UUID productId;
 
     @NotNull(message = "A quantidade é obrigatória")
-    @Positive(message = "Deve ser um número maior do que zero")
+    @Positive(message = "A quantidade deve ser um número maior do que zero")
     private Integer quantity;
 }

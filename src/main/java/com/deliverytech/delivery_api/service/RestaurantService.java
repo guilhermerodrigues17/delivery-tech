@@ -1,11 +1,5 @@
 package com.deliverytech.delivery_api.service;
 
-import java.util.List;
-import java.util.UUID;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import com.deliverytech.delivery_api.dto.request.RestaurantRequestDto;
 import com.deliverytech.delivery_api.dto.response.RestaurantResponseDto;
 import com.deliverytech.delivery_api.exceptions.DuplicatedRegisterException;
@@ -14,6 +8,13 @@ import com.deliverytech.delivery_api.mapper.RestaurantMapper;
 import com.deliverytech.delivery_api.model.Restaurant;
 import com.deliverytech.delivery_api.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
