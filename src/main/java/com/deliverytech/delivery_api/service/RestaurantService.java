@@ -53,8 +53,9 @@ public class RestaurantService {
     }
 
     @Transactional(readOnly = true)
-    public List<Restaurant> findByCategory(String category) {
-        return restaurantRepository.findByCategory(category);
+    public List<RestaurantResponseDto> findByCategory(String category) {
+        var restaurants = restaurantRepository.findByCategory(category);
+        return restaurants.stream().map(mapper::toDto).toList();
     }
 
     public List<Restaurant> searchRestaurants(String name, String category) {

@@ -58,6 +58,12 @@ public class RestaurantController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping(params = "category")
+    public ResponseEntity<List<RestaurantResponseDto>> findByCategory(@RequestParam String category) {
+        var response = restaurantService.findByCategory(category);
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping(value = "/{id}/delivery-tax", params = "cep")
     public ResponseEntity<Map<String, BigDecimal>> calculateDeliveryTax(
             @PathVariable String id,
