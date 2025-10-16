@@ -1,5 +1,7 @@
 package com.deliverytech.delivery_api.exceptions;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -55,6 +57,24 @@ public class GlobalExceptionHandler {
         errorBody.setMessage(ex.getMessage());
         errorBody.setStatusCode(HttpStatus.BAD_REQUEST.value());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    private ResponseEntity<ErrorMessage> handleConstraintViolationException(ConstraintViolationException ex) {
+        var errorBody = new ErrorMessage();
+        errorBody.setMessage(ex.getConstraintViolations().stream()
+                .map(ConstraintViolation::getMessage)
+                .toList().getFirst());
+        errorBody.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody);
+    }
+
+    @ExceptionHandler(CepZoneDistanceException.class)
+    private ResponseEntity<ErrorMessage> handleCepZoneDistanceException(CepZoneDistanceException ex) {
+        var errorBody = new ErrorMessage();
+        errorBody.setMessage(ex.getMessage());
+        errorBody.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY.value());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorBody);
     }
 
     @ExceptionHandler(Exception.class)

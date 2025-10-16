@@ -2,10 +2,12 @@ package com.deliverytech.delivery_api.service;
 
 import com.deliverytech.delivery_api.dto.request.RestaurantRequestDto;
 import com.deliverytech.delivery_api.dto.response.RestaurantResponseDto;
+import com.deliverytech.delivery_api.exceptions.CepZoneDistanceException;
 import com.deliverytech.delivery_api.exceptions.DuplicatedRegisterException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.mapper.RestaurantMapper;
 import com.deliverytech.delivery_api.model.Restaurant;
+import com.deliverytech.delivery_api.model.enums.CepZonesDistance;
 import com.deliverytech.delivery_api.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Example;
@@ -13,6 +15,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -101,4 +104,21 @@ public class RestaurantService {
 
         restaurantRepository.save(existingRestaurant);
     }
+
+    public BigDecimal calculateDeliveryTax(String restaurantId, String cep) {
+        Restaurant restaurant = findById(UUID.fromString(restaurantId));
+        var deliveryTaxBase = restaurant.getDeliveryTax();
+
+        String numericCep = cep.replaceAll("\\D", "");
+        CepZonesDistance cepZoneDistance = CepZonesDistance.getCepZoneDistance(numericCep)
+                .orElseThrow(() -> new CepZoneDistanceException(
+                        "Desculpe, este restaurante não realiza entregas para o CEP informado."));
+
+        return switch (cepZoneDistance) {
+            case SHORT_DISTANCE -> deliveryTaxBase;
+            case MEDIUM_DISTANCE -> deliveryTaxBase.add(new BigDecimal("5.00"));
+            case LONG_DISTANCE -> deliveryTaxBase.add(new BigDecimal("10.00"));
+        };
+    }
+
 }

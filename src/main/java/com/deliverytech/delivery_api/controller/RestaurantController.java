@@ -6,15 +6,21 @@ import com.deliverytech.delivery_api.mapper.RestaurantMapper;
 import com.deliverytech.delivery_api.model.Restaurant;
 import com.deliverytech.delivery_api.service.RestaurantService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/restaurants")
 @RequiredArgsConstructor
+@Validated
 public class RestaurantController {
     private final RestaurantService restaurantService;
     private final RestaurantMapper mapper;
@@ -49,6 +55,21 @@ public class RestaurantController {
     public ResponseEntity<List<RestaurantResponseDto>> findAllActive() {
         var restaurant = restaurantService.findAllActive();
         var response = restaurant.stream().map(mapper::toDto).toList();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(value = "/{id}/delivery-tax", params = "cep")
+    public ResponseEntity<Map<String, BigDecimal>> calculateDeliveryTax(
+            @PathVariable String id,
+            @RequestParam(required = true)
+            @Pattern(regexp = "\\d{5}-?\\d{3}", message = "Formato de CEP inválido. Use XXXXX-XXX ou XXXXXXXX.")
+            String cep
+    ) {
+        BigDecimal deliveryTax = restaurantService.calculateDeliveryTax(id, cep);
+
+        var response = new HashMap<String, BigDecimal>();
+        response.put("deliveryTax", deliveryTax);
+
         return ResponseEntity.ok(response);
     }
 
