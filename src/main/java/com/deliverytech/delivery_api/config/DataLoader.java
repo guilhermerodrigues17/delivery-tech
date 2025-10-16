@@ -2,6 +2,7 @@ package com.deliverytech.delivery_api.config;
 
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.model.*;
+import com.deliverytech.delivery_api.model.enums.OrderStatus;
 import com.deliverytech.delivery_api.repository.ConsumerRepository;
 import com.deliverytech.delivery_api.repository.OrderRepository;
 import com.deliverytech.delivery_api.repository.ProductRepository;

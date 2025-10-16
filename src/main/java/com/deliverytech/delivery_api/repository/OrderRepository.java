@@ -1,7 +1,7 @@
 package com.deliverytech.delivery_api.repository;
 
 import com.deliverytech.delivery_api.model.Order;
-import com.deliverytech.delivery_api.model.OrderStatus;
+import com.deliverytech.delivery_api.model.enums.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

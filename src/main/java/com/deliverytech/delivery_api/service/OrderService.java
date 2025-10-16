@@ -5,6 +5,7 @@ import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.mapper.OrderMapper;
 import com.deliverytech.delivery_api.model.*;
+import com.deliverytech.delivery_api.model.enums.OrderStatus;
 import com.deliverytech.delivery_api.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

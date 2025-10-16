@@ -1,5 +1,6 @@
 package com.deliverytech.delivery_api.model;
 
+import com.deliverytech.delivery_api.model.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
