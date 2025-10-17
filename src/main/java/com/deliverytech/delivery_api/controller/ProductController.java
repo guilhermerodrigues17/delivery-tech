@@ -48,6 +48,12 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("{id}")
+    public ResponseEntity<Void> toggleAvailability(@PathVariable String id) {
+        productService.toggleAvailability(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
         productService.deleteProduct(id);

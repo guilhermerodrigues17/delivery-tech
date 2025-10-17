@@ -77,4 +77,10 @@ public class ProductService {
         var product = findProductEntityById(id);
         productRepository.delete(product);
     }
+
+    public void toggleAvailability(String id) {
+        Product productFound = findProductEntityById(id);
+        productFound.setAvailable(!productFound.getAvailable());
+        productRepository.save(productFound);
+    }
 }
