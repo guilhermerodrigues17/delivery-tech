@@ -3,6 +3,7 @@ package com.deliverytech.delivery_api.controller;
 import com.deliverytech.delivery_api.dto.request.OrderRequestDto;
 import com.deliverytech.delivery_api.dto.request.OrderStatusUpdateRequestDto;
 import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
+import com.deliverytech.delivery_api.dto.response.OrderSummaryResponseDto;
 import com.deliverytech.delivery_api.dto.response.OrderTotalResponseDto;
 import com.deliverytech.delivery_api.service.OrderService;
 import jakarta.validation.Valid;
@@ -38,7 +39,7 @@ public class OrderController {
     }
 
     @GetMapping(params = "consumerId")
-    public ResponseEntity<List<OrderResponseDto>> findOrdersByConsumerId(
+    public ResponseEntity<List<OrderSummaryResponseDto>> findOrdersByConsumerId(
             @RequestParam String consumerId) {
         var ordersResponse = orderService.findByConsumerIdResponse(consumerId);
         return ResponseEntity.ok(ordersResponse);

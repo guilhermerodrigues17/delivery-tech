@@ -3,6 +3,7 @@ package com.deliverytech.delivery_api.service;
 import com.deliverytech.delivery_api.dto.request.OrderItemRequestDto;
 import com.deliverytech.delivery_api.dto.request.OrderRequestDto;
 import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
+import com.deliverytech.delivery_api.dto.response.OrderSummaryResponseDto;
 import com.deliverytech.delivery_api.dto.response.OrderTotalResponseDto;
 import com.deliverytech.delivery_api.exceptions.BusinessException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
@@ -93,9 +94,9 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderResponseDto> findByConsumerIdResponse(String consumerId) {
+    public List<OrderSummaryResponseDto> findByConsumerIdResponse(String consumerId) {
         List<Order> orders = findByConsumerId(consumerId);
-        return orders.stream().map(orderMapper::toDto).toList();
+        return orderMapper.toSummaryDtoList(orders);
     }
 
     @Transactional
