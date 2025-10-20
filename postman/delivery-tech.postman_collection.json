@@ -3,7 +3,7 @@
 		"_postman_id": "a6d1c26a-bb20-49fb-aa03-6b3b09914a9c",
 		"name": "delivery-tech",
 		"description": "# 🚀 Get started here\n\nThis template guides you through CRUD operations (GET, POST, PUT, DELETE), variables, and tests.\n\n## 🔖 **How to use this template**\n\n#### **Step 1: Send requests**\n\nRESTful APIs allow you to perform CRUD operations using the POST, GET, PUT, and DELETE HTTP methods.\n\nThis collection contains each of these [request](https://learning.postman.com/docs/sending-requests/requests/) types. Open each request and click \"Send\" to see what happens.\n\n#### **Step 2: View responses**\n\nObserve the response tab for status code (200 OK), response time, and size.\n\n#### **Step 3: Send new Body data**\n\nUpdate or add new data in \"Body\" in the POST request. Typically, Body data is also used in PUT request.\n\n```\n{\n    \"name\": \"Add your name in the body\"\n}\n\n ```\n\n#### **Step 4: Update the variable**\n\nVariables enable you to store and reuse values in Postman. We have created a [variable](https://learning.postman.com/docs/sending-requests/variables/) called `base_url` with the sample request [https://postman-api-learner.glitch.me](https://postman-api-learner.glitch.me). Replace it with your API endpoint to customize this collection.\n\n#### **Step 5: Add tests in the \"Scripts\" tab**\n\nAdding tests to your requests can help you confirm that your API is working as expected. You can write test scripts in JavaScript and view the output in the \"Test Results\" tab.\n\n<img src=\"https://content.pstmn.io/fa30ea0a-373d-4545-a668-e7b283cca343/aW1hZ2UucG5n\" alt=\"\" height=\"1530\" width=\"2162\">\n\n## 💪 Pro tips\n\n- Use folders to group related requests and organize the collection.\n    \n- Add more [scripts](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/) to verify if the API works as expected and execute workflows.\n    \n\n## 💡Related templates\n\n[API testing basics](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9a37a28-055b-49cd-8c7e-97494a21eb54&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[API documentation](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9c28f47-1253-44af-a2f3-20dce4da1f18&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[Authorization methods](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=31a9a6ed-4cdf-4ced-984c-d12c9aec1c27&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
 		"_exporter_id": "46943156",
 		"_collection_link": "https://guilhermerodrigues17-94703ace-9620165.postman.co/workspace/Guilherme-Rodrigues-Machado's-W~a1d67475-11a5-4f71-8c0d-013db3a3b018/collection/46943156-a6d1c26a-bb20-49fb-aa03-6b3b09914a9c?action=share&source=collection_link&creator=46943156"
 	},
@@ -41,15 +41,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{LOCAL_HOST}}/consumers",
-							"host": [
-								"{{LOCAL_HOST}}"
-							],
-							"path": [
-								"consumers"
-							]
-						}
+						"url": "{{LOCAL_HOST}}/consumers"
 					},
 					"response": []
 				},
@@ -141,15 +133,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{LOCAL_HOST}}/consumers",
-							"host": [
-								"{{LOCAL_HOST}}"
-							],
-							"path": [
-								"consumers"
-							]
-						}
+						"url": "{{LOCAL_HOST}}/consumers"
 					},
 					"response": []
 				},
@@ -238,22 +222,14 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Bullguer\",\r\n    \"category\": \"Hamburguer artesanal\",\r\n    \"address\": \"Shopping Tamboré, S/N\",\r\n    \"phoneNumber\": \"11111111111\",\r\n    \"deliveryTax\": 18.99\r\n}",
+							"raw": "{\r\n    \"name\": \"Bullguer\",\r\n    \"category\": \"Hamburger Artesanal\",\r\n    \"address\": \"Shopping Tamboré, S/N\",\r\n    \"phoneNumber\": \"11111111111\",\r\n    \"deliveryTax\": 8.00\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": {
-							"raw": "{{LOCAL_HOST}}/restaurants",
-							"host": [
-								"{{LOCAL_HOST}}"
-							],
-							"path": [
-								"restaurants"
-							]
-						}
+						"url": "{{LOCAL_HOST}}/restaurants"
 					},
 					"response": []
 				},
@@ -310,15 +286,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{LOCAL_HOST}}/restaurants",
-							"host": [
-								"{{LOCAL_HOST}}"
-							],
-							"path": [
-								"restaurants"
-							]
-						}
+						"url": "{{LOCAL_HOST}}/restaurants"
 					},
 					"response": []
 				},
@@ -356,6 +324,79 @@
 								{
 									"key": "category",
 									"value": "brasileira"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find restaurants by category",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/restaurants?category=Italiana",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"restaurants"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "Italiana"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Calculate delivery tax",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{LOCAL_HOST}}/restaurants/:id/delivery-tax?cep=06400-100",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"restaurants",
+								":id",
+								"delivery-tax"
+							],
+							"query": [
+								{
+									"key": "cep",
+									"value": "06400-100"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{restaurantId}}"
 								}
 							]
 						}
@@ -463,15 +504,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{LOCAL_HOST}}/products",
-							"host": [
-								"{{LOCAL_HOST}}"
-							],
-							"path": [
-								"products"
-							]
-						}
+						"url": "{{LOCAL_HOST}}/products"
 					},
 					"response": []
 				},
@@ -499,7 +532,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "3a7e636f-0e82-4513-a890-7d7ce800f5d2"
+									"value": "{{productId}}"
 								}
 							]
 						}
@@ -519,7 +552,7 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{LOCAL_HOST}}/products?restaurantId=aad922c8-6ee7-4ddf-87eb-d0920be370d1",
+							"raw": "{{LOCAL_HOST}}/products?restaurantId={{restaurantId}}",
 							"host": [
 								"{{LOCAL_HOST}}"
 							],
@@ -529,7 +562,7 @@
 							"query": [
 								{
 									"key": "restaurantId",
-									"value": "aad922c8-6ee7-4ddf-87eb-d0920be370d1"
+									"value": "{{restaurantId}}"
 								}
 							]
 						}
@@ -592,6 +625,30 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Toggle Availability",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{LOCAL_HOST}}/products/:id",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"products",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{productId}}"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -628,15 +685,41 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{LOCAL_HOST}}/orders",
-							"host": [
-								"{{LOCAL_HOST}}"
-							],
-							"path": [
-								"orders"
-							]
+						"url": "{{LOCAL_HOST}}/orders"
+					},
+					"response": []
+				},
+				{
+					"name": "Calculate total",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"pm.environment.set(\"orderId\", response.id);\r",
+									"\r",
+									"console.log(\"Order ID salvo: \", pm.environment.get(\"orderId\"));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
 						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"consumerId\": \"{{consumerId}}\",\r\n    \"restaurantId\": \"{{restaurantId}}\",\r\n    \"items\": [\r\n        {\r\n            \"productId\": \"{{productId}}\",\r\n            \"quantity\": 2\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{LOCAL_HOST}}/orders/calculate-total"
 					},
 					"response": []
 				},
@@ -664,7 +747,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "a20f34d6-bed1-4aa4-ac8c-fec664f4ddf9"
+									"value": "{{orderId}}"
 								}
 							]
 						}
@@ -677,7 +760,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{LOCAL_HOST}}/orders?consumerId=3eed2353-ba65-4e9f-b25f-f4959561a8a1",
+							"raw": "{{LOCAL_HOST}}/orders?consumerId={{consumerId}}",
 							"host": [
 								"{{LOCAL_HOST}}"
 							],
@@ -687,7 +770,7 @@
 							"query": [
 								{
 									"key": "consumerId",
-									"value": "3eed2353-ba65-4e9f-b25f-f4959561a8a1"
+									"value": "{{consumerId}}"
 								}
 							]
 						}
@@ -726,11 +809,35 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Cancel order",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{LOCAL_HOST}}/orders/:id",
+							"host": [
+								"{{LOCAL_HOST}}"
+							],
+							"path": [
+								"orders",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{orderId}}"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
 		{
-			"name": "Flux - Create order E2E",
+			"name": "Flux - Create order E2E Copy",
 			"item": [
 				{
 					"name": "Create consumer",
@@ -762,15 +869,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{LOCAL_HOST}}/consumers",
-							"host": [
-								"{{LOCAL_HOST}}"
-							],
-							"path": [
-								"consumers"
-							]
-						}
+						"url": "{{LOCAL_HOST}}/consumers"
 					},
 					"response": []
 				},
@@ -804,15 +903,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{LOCAL_HOST}}/restaurants",
-							"host": [
-								"{{LOCAL_HOST}}"
-							],
-							"path": [
-								"restaurants"
-							]
-						}
+						"url": "{{LOCAL_HOST}}/restaurants"
 					},
 					"response": []
 				},
@@ -846,15 +937,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{LOCAL_HOST}}/products",
-							"host": [
-								"{{LOCAL_HOST}}"
-							],
-							"path": [
-								"products"
-							]
-						}
+						"url": "{{LOCAL_HOST}}/products"
 					},
 					"response": []
 				},
@@ -888,15 +971,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{LOCAL_HOST}}/products",
-							"host": [
-								"{{LOCAL_HOST}}"
-							],
-							"path": [
-								"products"
-							]
-						}
+						"url": "{{LOCAL_HOST}}/products"
 					},
 					"response": []
 				},
@@ -930,15 +1005,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{LOCAL_HOST}}/products",
-							"host": [
-								"{{LOCAL_HOST}}"
-							],
-							"path": [
-								"products"
-							]
-						}
+						"url": "{{LOCAL_HOST}}/products"
 					},
 					"response": []
 				},
@@ -972,15 +1039,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{LOCAL_HOST}}/orders",
-							"host": [
-								"{{LOCAL_HOST}}"
-							],
-							"path": [
-								"orders"
-							]
-						}
+						"url": "{{LOCAL_HOST}}/orders"
 					},
 					"response": []
 				},
@@ -1053,15 +1112,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{LOCAL_HOST}}/orders",
-							"host": [
-								"{{LOCAL_HOST}}"
-							],
-							"path": [
-								"orders"
-							]
-						}
+						"url": "{{LOCAL_HOST}}/orders"
 					},
 					"response": []
 				},
@@ -1119,15 +1170,7 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": {
-					"raw": "{{LOCAL_HOST}}/health",
-					"host": [
-						"{{LOCAL_HOST}}"
-					],
-					"path": [
-						"health"
-					]
-				},
+				"url": "{{LOCAL_HOST}}/health",
 				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
 			},
 			"response": []
@@ -1150,15 +1193,7 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": {
-					"raw": "{{LOCAL_HOST}}/info",
-					"host": [
-						"{{LOCAL_HOST}}"
-					],
-					"path": [
-						"info"
-					]
-				},
+				"url": "{{LOCAL_HOST}}/info",
 				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
 			},
 			"response": []
