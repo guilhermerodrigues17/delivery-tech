@@ -1,0 +1,78 @@
+package com.deliverytech.delivery_api.service.impl;
+
+import com.deliverytech.delivery_api.dto.request.ConsumerRequestDto;
+import com.deliverytech.delivery_api.dto.response.ConsumerResponseDto;
+import com.deliverytech.delivery_api.exceptions.DuplicatedRegisterException;
+import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
+import com.deliverytech.delivery_api.mapper.ConsumerMapper;
+import com.deliverytech.delivery_api.model.Consumer;
+import com.deliverytech.delivery_api.repository.ConsumerRepository;
+import com.deliverytech.delivery_api.service.ConsumerService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class ConsumerServiceImpl implements ConsumerService {
+
+    private final ConsumerRepository consumerRepository;
+    private final ConsumerMapper mapper;
+
+    public Consumer create(Consumer consumer) {
+        if (existsByEmail(consumer.getEmail())) {
+            throw new DuplicatedRegisterException("E-mail já está em uso");
+        }
+
+        consumer.setActive(true);
+        return consumerRepository.save(consumer);
+    }
+
+    public Consumer findById(UUID id) {
+        return consumerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado"));
+    }
+
+    public Consumer findByEmail(String email) {
+        return consumerRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado"));
+    }
+
+    public Boolean existsByEmail(String email) {
+        return consumerRepository.existsByEmail(email);
+    }
+
+    public List<Consumer> findAllActive() {
+        return consumerRepository.findByActiveTrue();
+    }
+
+    public ConsumerResponseDto updateConsumer(String id, ConsumerRequestDto dto) {
+        Consumer existingConsumer = findById(UUID.fromString(id));
+
+        if (!existingConsumer.getEmail().equals(dto.getEmail())) {
+
+            if (existsByEmail(dto.getEmail())) {
+                throw new DuplicatedRegisterException("E-mail já está em uso");
+            }
+
+            existingConsumer.setEmail(dto.getEmail());
+        }
+
+        existingConsumer.setName(dto.getName());
+        existingConsumer.setPhoneNumber(dto.getPhoneNumber());
+        existingConsumer.setAddress(dto.getAddress());
+
+        var updatedConsumer = consumerRepository.save(existingConsumer);
+
+        return mapper.toDto(updatedConsumer);
+    }
+
+    public void softDeleteConsumer(String id) {
+        Consumer existingConsumer = findById(UUID.fromString(id));
+        existingConsumer.setActive(false);
+
+        consumerRepository.save(existingConsumer);
+    }
+}
