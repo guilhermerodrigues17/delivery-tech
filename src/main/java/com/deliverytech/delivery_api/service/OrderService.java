@@ -123,6 +123,20 @@ public class OrderService {
         return new OrderTotalResponseDto(subtotal, deliveryTax, totalPrice);
     }
 
+    @Transactional
+    public void cancelOrder(String orderId) {
+        Order order = findById(orderId);
+
+        if (!order.getStatus().canTransition(OrderStatus.CANCELED)) {
+            throw new BusinessException(
+                    String.format("Não é possível cancelar o pedido com status '%s'.", order.getStatus())
+            );
+        }
+
+        order.setStatus(OrderStatus.CANCELED);
+        orderRepository.save(order);
+    }
+
     private BigDecimal calculateSubtotal(List<OrderItemRequestDto> items, UUID restaurantId) {
         BigDecimal subtotal = BigDecimal.ZERO;
 

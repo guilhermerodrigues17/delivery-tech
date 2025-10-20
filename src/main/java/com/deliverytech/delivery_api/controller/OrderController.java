@@ -50,4 +50,10 @@ public class OrderController {
         var response = orderService.updateOrderStatus(id, dto.getStatus());
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> cancelOrder(@PathVariable("id") String orderId) {
+        orderService.cancelOrder(orderId);
+        return ResponseEntity.noContent().build();
+    }
 }
