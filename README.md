@@ -56,6 +56,7 @@ clientes, restaurantes, produtos e pedidos.
 - ``GET /restaurants`` - Lista todos os restaurantes ativos;
 - ``GET /restaurants/search?name={name}&category={category}`` - Busca
   restaurantes por nome e/ou categoria
+- ``GET /restaurants/{id}/delivery-tax?cep={cep}`` - Calcula a taxa de entrega para um CEP;
 - ``PUT /restaurants/{id}`` - Atualiza os dados de um restaurante;
 - ``PATCH /restaurants/{id}`` - Ativa ou desativa um restaurante.
 
@@ -66,15 +67,18 @@ clientes, restaurantes, produtos e pedidos.
 - ``GET /products?restaurantId={restaurantId}`` - Lista os produtos de um
   restaurante específico;
 - ``PUT /products/{id}`` - Atualiza os dados de um produto;
+- ``PATCH /products/{id}`` - Altera a disponibilidade de um produto;
 - ``DELETE /products/{id}`` - Deleta um produto.
 
 ### Orders (Pedidos)
 
 - ``POST /orders`` - Cria um novo pedido;
+- ``POST /orders/calculate-total`` - Simula o valor de um pedido sem o criar;
 - ``GET /orders/{id}`` - Busca um pedido pelo ID;
 - ``GET /orders?consumerId={consumerId}`` - Lista os pedidos de um cliente
   específico;
 - ``PATCH /orders/{id}`` - Atualiza o status de um pedido.
+- ``DELETE /orders/{id}`` - Cancela um pedido.
 
 ## ⚙️ Como executar o projeto
 
