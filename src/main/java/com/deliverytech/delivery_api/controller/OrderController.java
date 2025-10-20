@@ -3,6 +3,7 @@ package com.deliverytech.delivery_api.controller;
 import com.deliverytech.delivery_api.dto.request.OrderRequestDto;
 import com.deliverytech.delivery_api.dto.request.OrderStatusUpdateRequestDto;
 import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
+import com.deliverytech.delivery_api.dto.response.OrderTotalResponseDto;
 import com.deliverytech.delivery_api.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,12 @@ public class OrderController {
     public ResponseEntity<OrderResponseDto> createOrder(@Valid @RequestBody OrderRequestDto dto) {
         var response = orderService.createOrderResponse(dto);
         return ResponseEntity.created(null).body(response);
+    }
+
+    @PostMapping("/calculate-total")
+    public ResponseEntity<OrderTotalResponseDto> calculateOrderTotal(@Valid @RequestBody OrderRequestDto dto) {
+        var response = orderService.calculateOrderTotal(dto);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")

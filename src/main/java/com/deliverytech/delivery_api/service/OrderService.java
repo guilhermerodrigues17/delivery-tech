@@ -1,7 +1,10 @@
 package com.deliverytech.delivery_api.service;
 
+import com.deliverytech.delivery_api.dto.request.OrderItemRequestDto;
 import com.deliverytech.delivery_api.dto.request.OrderRequestDto;
 import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
+import com.deliverytech.delivery_api.dto.response.OrderTotalResponseDto;
+import com.deliverytech.delivery_api.exceptions.BusinessException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.mapper.OrderMapper;
 import com.deliverytech.delivery_api.model.*;
@@ -108,5 +111,32 @@ public class OrderService {
         var response = orderRepository.save(order);
 
         return orderMapper.toDto(response);
+    }
+
+    public OrderTotalResponseDto calculateOrderTotal(OrderRequestDto dto) {
+        var restaurant = restaurantService.findById(dto.getRestaurantId());
+        BigDecimal subtotal = calculateSubtotal(dto.getItems(), restaurant.getId());
+        BigDecimal deliveryTax = restaurant.getDeliveryTax();
+        BigDecimal totalPrice = subtotal.add(deliveryTax);
+
+        return new OrderTotalResponseDto(subtotal, deliveryTax, totalPrice);
+    }
+
+    private BigDecimal calculateSubtotal(List<OrderItemRequestDto> items, UUID restaurantId) {
+        BigDecimal subtotal = BigDecimal.ZERO;
+
+        for (OrderItemRequestDto itemDto : items) {
+            Product product = productService.findProductEntityById(itemDto.getProductId().toString());
+            if (!product.getRestaurant().getId().equals(restaurantId)) {
+                throw new BusinessException(
+                        String.format("O produto '%s' (%s) não pertence ao restaurante informado.", product.getName(), product.getId())
+                );
+            }
+
+            BigDecimal itemPrice = product.getPrice().multiply(new BigDecimal(itemDto.getQuantity()));
+            subtotal = subtotal.add(itemPrice);
+        }
+
+        return subtotal;
     }
 }

@@ -77,6 +77,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorBody);
     }
 
+    @ExceptionHandler(BusinessException.class)
+    private ResponseEntity<ErrorMessage> handleBusinessException(BusinessException ex) {
+        var errorBody = new ErrorMessage();
+        errorBody.setMessage(ex.getMessage());
+        errorBody.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY.value());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorBody);
+    }
+
     @ExceptionHandler(Exception.class)
     private ResponseEntity<ErrorMessage> handleGenericException(Exception ex) {
         var errorBody = new ErrorMessage();
