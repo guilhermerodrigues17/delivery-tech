@@ -44,8 +44,9 @@ public class OrderService {
             Product product = productService.findProductEntityById(item.getProductId().toString());
 
             if (!product.getRestaurant().getId().equals(restaurant.getId())) {
-                throw new IllegalArgumentException("O produto " + product.getName()
-                        + " não pertence ao restaurante selecionado.");
+                throw new BusinessException(
+                        String.format("O produto '%s' (%s) não pertence ao restaurante informado.",
+                                product.getName(), product.getId()));
             }
 
             OrderItem orderItem = new OrderItem();
@@ -103,7 +104,7 @@ public class OrderService {
         var currentStatus = order.getStatus();
 
         if (!currentStatus.canTransition(newStatus)) {
-            throw new IllegalStateException(
+            throw new BusinessException(
                     "Não é possível mudar de " + currentStatus + " para " + newStatus);
         }
 

@@ -2,6 +2,7 @@ package com.deliverytech.delivery_api.service;
 
 import com.deliverytech.delivery_api.dto.request.ProductRequestDto;
 import com.deliverytech.delivery_api.dto.response.ProductResponseDto;
+import com.deliverytech.delivery_api.exceptions.BusinessException;
 import com.deliverytech.delivery_api.exceptions.NotAllowedException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.mapper.ProductMapper;
@@ -58,7 +59,9 @@ public class ProductService {
     public ProductResponseDto updateProduct(String id, ProductRequestDto dto) {
         var product = findProductEntityById(id);
         if (!product.getRestaurant().getId().equals(dto.getRestaurantId())) {
-            throw new NotAllowedException("Produto não pertence ao restaurante informado");
+            throw new BusinessException(
+                    String.format("O produto '%s' (%s) não pertence ao restaurante informado.",
+                            product.getName(), product.getId()));
         }
 
         product.setName(dto.getName());
