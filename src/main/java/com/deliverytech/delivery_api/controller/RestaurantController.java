@@ -1,6 +1,7 @@
 package com.deliverytech.delivery_api.controller;
 
 import com.deliverytech.delivery_api.dto.request.RestaurantRequestDto;
+import com.deliverytech.delivery_api.dto.request.RestaurantStatusUpdateDto;
 import com.deliverytech.delivery_api.dto.response.RestaurantResponseDto;
 import com.deliverytech.delivery_api.mapper.RestaurantMapper;
 import com.deliverytech.delivery_api.model.Restaurant;
@@ -45,10 +46,10 @@ public class RestaurantController {
     @GetMapping("/search")
     public ResponseEntity<List<RestaurantResponseDto>> searchRestaurants(
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String category) {
-        var restaurants = restaurantService.searchRestaurants(name, category);
-        var response = restaurants.stream().map(mapper::toDto).toList();
-        return ResponseEntity.ok(response);
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false, defaultValue = "true") String active) {
+        var restaurants = restaurantService.searchRestaurants(name, category, active);
+        return ResponseEntity.ok(restaurants);
     }
 
     @GetMapping
@@ -86,9 +87,10 @@ public class RestaurantController {
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<Void> updateStatusActive(@PathVariable String id) {
-        restaurantService.updateStatusActive(id);
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Void> updateStatusActive(@PathVariable String id,
+                                                   @Valid @RequestBody RestaurantStatusUpdateDto dto) {
+        restaurantService.updateStatusActive(id, dto);
         return ResponseEntity.noContent().build();
     }
 }

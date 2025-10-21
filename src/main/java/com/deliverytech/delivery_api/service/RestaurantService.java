@@ -1,6 +1,7 @@
 package com.deliverytech.delivery_api.service;
 
 import com.deliverytech.delivery_api.dto.request.RestaurantRequestDto;
+import com.deliverytech.delivery_api.dto.request.RestaurantStatusUpdateDto;
 import com.deliverytech.delivery_api.dto.response.RestaurantResponseDto;
 import com.deliverytech.delivery_api.model.Restaurant;
 
@@ -14,10 +15,10 @@ public interface RestaurantService {
     Restaurant findByName(String name);
     Boolean existsByName(String name);
     List<RestaurantResponseDto> findByCategory(String category);
-    List<Restaurant> searchRestaurants(String name, String category);
+    List<RestaurantResponseDto> searchRestaurants(String name, String category, String active);
     List<Restaurant> findAllActive();
     List<Restaurant> findAll();
     RestaurantResponseDto updateRestaurant(String id, RestaurantRequestDto dto);
-    void updateStatusActive(String id);
+    void updateStatusActive(String id, RestaurantStatusUpdateDto dto);
     BigDecimal calculateDeliveryTax(String restaurantId, String cep);
 }

@@ -1,6 +1,7 @@
 package com.deliverytech.delivery_api.service.impl;
 
 import com.deliverytech.delivery_api.dto.request.RestaurantRequestDto;
+import com.deliverytech.delivery_api.dto.request.RestaurantStatusUpdateDto;
 import com.deliverytech.delivery_api.dto.response.RestaurantResponseDto;
 import com.deliverytech.delivery_api.exceptions.CepZoneDistanceException;
 import com.deliverytech.delivery_api.exceptions.DuplicatedRegisterException;
@@ -59,17 +60,19 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurants.stream().map(mapper::toDto).toList();
     }
 
-    public List<Restaurant> searchRestaurants(String name, String category) {
+    public List<RestaurantResponseDto> searchRestaurants(String name, String category, String active) {
         var restaurant = new Restaurant();
         restaurant.setName(name);
         restaurant.setCategory(category);
+        restaurant.setActive(Boolean.parseBoolean(active));
 
         ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues().withIgnoreCase()
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
 
-        Example<Restaurant> example = Example.of(restaurant, matcher);
+        Example<Restaurant> restaurantExample = Example.of(restaurant, matcher);
 
-        return restaurantRepository.findAll(example);
+        List<Restaurant> restaurants = restaurantRepository.findAll(restaurantExample);
+        return restaurants.stream().map(mapper::toDto).toList();
     }
 
     public List<Restaurant> findAllActive() {
@@ -100,9 +103,9 @@ public class RestaurantServiceImpl implements RestaurantService {
         return mapper.toDto(updatedRestaurant);
     }
 
-    public void updateStatusActive(String id) {
+    public void updateStatusActive(String id, RestaurantStatusUpdateDto dto) {
         Restaurant existingRestaurant = findById(UUID.fromString(id));
-        existingRestaurant.setActive(!existingRestaurant.getActive());
+        existingRestaurant.setActive(dto.getActive());
 
         restaurantRepository.save(existingRestaurant);
     }
