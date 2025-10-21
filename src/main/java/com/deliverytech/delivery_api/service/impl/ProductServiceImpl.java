@@ -54,7 +54,6 @@ public class ProductServiceImpl implements ProductService {
         var restaurant = restaurantService.findById(UUID.fromString(restaurantId));
 
         var products = productRepository.findByRestaurantId(restaurant.getId());
-
         return products.stream().map(productMapper::toResponseDto).toList();
     }
 

@@ -2,9 +2,11 @@ package com.deliverytech.delivery_api.controller;
 
 import com.deliverytech.delivery_api.dto.request.RestaurantRequestDto;
 import com.deliverytech.delivery_api.dto.request.RestaurantStatusUpdateDto;
+import com.deliverytech.delivery_api.dto.response.ProductResponseDto;
 import com.deliverytech.delivery_api.dto.response.RestaurantResponseDto;
 import com.deliverytech.delivery_api.mapper.RestaurantMapper;
 import com.deliverytech.delivery_api.model.Restaurant;
+import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
@@ -24,6 +26,7 @@ import java.util.Map;
 @Validated
 public class RestaurantController {
     private final RestaurantService restaurantService;
+    private final ProductService productService;
     private final RestaurantMapper mapper;
 
     @PostMapping
@@ -62,6 +65,12 @@ public class RestaurantController {
     @GetMapping(params = "category")
     public ResponseEntity<List<RestaurantResponseDto>> findByCategory(@RequestParam String category) {
         var response = restaurantService.findByCategory(category);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{restaurantId}/products")
+    public ResponseEntity<List<ProductResponseDto>> findProductsByRestaurantId(@PathVariable String restaurantId) {
+        var response = productService.findProductsByRestaurantIdResponse(restaurantId);
         return ResponseEntity.ok(response);
     }
 

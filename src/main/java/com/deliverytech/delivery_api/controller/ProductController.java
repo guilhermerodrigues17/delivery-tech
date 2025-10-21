@@ -42,13 +42,6 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping(params = "restaurantId")
-    public ResponseEntity<List<ProductResponseDto>> findProductsByRestaurantId(
-            @RequestParam String restaurantId) {
-        var response = productService.findProductsByRestaurantIdResponse(restaurantId);
-        return ResponseEntity.ok(response);
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDto> updateProduct(@PathVariable String id,
                                                             @Valid @RequestBody ProductRequestDto dto) {
