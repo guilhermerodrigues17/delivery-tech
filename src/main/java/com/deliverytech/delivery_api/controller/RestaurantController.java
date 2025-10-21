@@ -2,10 +2,12 @@ package com.deliverytech.delivery_api.controller;
 
 import com.deliverytech.delivery_api.dto.request.RestaurantRequestDto;
 import com.deliverytech.delivery_api.dto.request.RestaurantStatusUpdateDto;
+import com.deliverytech.delivery_api.dto.response.OrderSummaryResponseDto;
 import com.deliverytech.delivery_api.dto.response.ProductResponseDto;
 import com.deliverytech.delivery_api.dto.response.RestaurantResponseDto;
 import com.deliverytech.delivery_api.mapper.RestaurantMapper;
 import com.deliverytech.delivery_api.model.Restaurant;
+import com.deliverytech.delivery_api.service.OrderService;
 import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
 import jakarta.validation.Valid;
@@ -27,6 +29,7 @@ import java.util.Map;
 public class RestaurantController {
     private final RestaurantService restaurantService;
     private final ProductService productService;
+    private final OrderService orderService;
     private final RestaurantMapper mapper;
 
     @PostMapping
@@ -72,6 +75,12 @@ public class RestaurantController {
     public ResponseEntity<List<ProductResponseDto>> findProductsByRestaurantId(@PathVariable String restaurantId) {
         var response = productService.findProductsByRestaurantIdResponse(restaurantId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{restaurantId}/orders")
+    public ResponseEntity<List<OrderSummaryResponseDto>> findOrdersByRestaurantId(@PathVariable String restaurantId) {
+        List<OrderSummaryResponseDto> orders = orderService.findByRestaurantId(restaurantId);
+        return ResponseEntity.ok(orders);
     }
 
     @GetMapping(value = "/{id}/delivery-tax", params = "cep")

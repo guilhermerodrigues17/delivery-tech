@@ -16,6 +16,7 @@ public interface OrderService {
     OrderResponseDto getOrderResponseById(String id);
     List<Order> findByConsumerId(String consumerId);
     List<OrderSummaryResponseDto> findByConsumerIdResponse(String consumerId);
+    List<OrderSummaryResponseDto> findByRestaurantId(String restaurantId);
     OrderResponseDto updateOrderStatus(String id, OrderStatus newStatus);
     OrderTotalResponseDto calculateOrderTotal(OrderRequestDto dto);
     void cancelOrder(String orderId);

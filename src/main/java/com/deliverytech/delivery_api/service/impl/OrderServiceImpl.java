@@ -103,6 +103,13 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toSummaryDtoList(orders);
     }
 
+    @Override
+    public List<OrderSummaryResponseDto> findByRestaurantId(String restaurantId) {
+        var restaurant = restaurantService.findById(UUID.fromString(restaurantId));
+        List<Order> orders = orderRepository.findByRestaurantId(restaurant.getId());
+        return orderMapper.toSummaryDtoList(orders);
+    }
+
     @Transactional
     public OrderResponseDto updateOrderStatus(String id, OrderStatus newStatus) {
         Order order = findById(id);

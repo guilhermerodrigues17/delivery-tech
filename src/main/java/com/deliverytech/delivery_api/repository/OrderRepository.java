@@ -14,6 +14,8 @@ import java.util.UUID;
 public interface OrderRepository extends JpaRepository<Order, UUID> {
     List<Order> findByConsumerId(UUID consumerId);
 
+    List<Order> findByRestaurantId(UUID restaurantId);
+
     List<Order> findByStatus(OrderStatus status);
 
     List<Order> findByOrderDateBetween(LocalDateTime startDate, LocalDateTime endDate);
