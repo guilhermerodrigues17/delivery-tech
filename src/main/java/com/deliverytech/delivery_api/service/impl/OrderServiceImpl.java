@@ -103,7 +103,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     public List<Order> findByConsumerId(String consumerId) {
-        return orderRepository.findByConsumerId(UUID.fromString(consumerId));
+        Consumer consumer = consumerService.findById(UUID.fromString(consumerId));
+        return orderRepository.findByConsumerId(consumer.getId());
     }
 
     @Transactional(readOnly = true)

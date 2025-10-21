@@ -29,7 +29,7 @@ public class OrderController {
         return ResponseEntity.created(null).body(response);
     }
 
-    @PostMapping("/calculate-total")
+    @PostMapping("/calculate")
     public ResponseEntity<OrderTotalResponseDto> calculateOrderTotal(@Valid @RequestBody OrderRequestDto dto) {
         var response = orderService.calculateOrderTotal(dto);
         return ResponseEntity.ok(response);
@@ -48,13 +48,6 @@ public class OrderController {
     public ResponseEntity<OrderResponseDto> findOrderById(@PathVariable String id) {
         var response = orderService.getOrderResponseById(id);
         return ResponseEntity.ok(response);
-    }
-
-    @GetMapping(params = "consumerId")
-    public ResponseEntity<List<OrderSummaryResponseDto>> findOrdersByConsumerId(
-            @RequestParam String consumerId) {
-        var ordersResponse = orderService.findByConsumerIdResponse(consumerId);
-        return ResponseEntity.ok(ordersResponse);
     }
 
     @PatchMapping("/{id}")

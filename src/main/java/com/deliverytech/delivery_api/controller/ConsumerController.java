@@ -2,9 +2,11 @@ package com.deliverytech.delivery_api.controller;
 
 import com.deliverytech.delivery_api.dto.request.ConsumerRequestDto;
 import com.deliverytech.delivery_api.dto.response.ConsumerResponseDto;
+import com.deliverytech.delivery_api.dto.response.OrderSummaryResponseDto;
 import com.deliverytech.delivery_api.mapper.ConsumerMapper;
 import com.deliverytech.delivery_api.model.Consumer;
 import com.deliverytech.delivery_api.service.ConsumerService;
+import com.deliverytech.delivery_api.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import java.util.UUID;
 public class ConsumerController {
 
     private final ConsumerService consumerService;
+    private final OrderService orderService;
     private final ConsumerMapper mapper;
 
     @PostMapping
@@ -49,6 +52,12 @@ public class ConsumerController {
         var consumer = consumerService.findByEmail(email);
         var response = mapper.toDto(consumer);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{consumerId}/orders")
+    public ResponseEntity<List<OrderSummaryResponseDto>> findOrdersByConsumerId(@PathVariable String consumerId) {
+        var ordersResponse = orderService.findByConsumerIdResponse(consumerId);
+        return ResponseEntity.ok(ordersResponse);
     }
 
     @PutMapping("/{id}")
