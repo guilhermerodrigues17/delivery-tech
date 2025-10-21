@@ -8,6 +8,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.List;
 
@@ -38,6 +39,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     private ResponseEntity<ErrorMessage> handleHttpMessageNotReadableException(
             HttpMessageNotReadableException ex) {
+        var errorBody = new ErrorMessage();
+        errorBody.setMessage(ex.getMessage());
+        errorBody.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    private ResponseEntity<ErrorMessage> handleMethodArgumentTypeMismatchException(
+            MethodArgumentTypeMismatchException ex) {
         var errorBody = new ErrorMessage();
         errorBody.setMessage(ex.getMessage());
         errorBody.setStatusCode(HttpStatus.BAD_REQUEST.value());

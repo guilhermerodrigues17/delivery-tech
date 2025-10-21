@@ -11,15 +11,24 @@ import com.deliverytech.delivery_api.mapper.OrderMapper;
 import com.deliverytech.delivery_api.model.*;
 import com.deliverytech.delivery_api.model.enums.OrderStatus;
 import com.deliverytech.delivery_api.repository.OrderRepository;
+import com.deliverytech.delivery_api.repository.specification.OrderSpecification;
 import com.deliverytech.delivery_api.service.ConsumerService;
 import com.deliverytech.delivery_api.service.OrderService;
 import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
@@ -110,6 +119,33 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toSummaryDtoList(orders);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public List<OrderSummaryResponseDto> searchOrders(OrderStatus status, LocalDate startDate, LocalDate endDate) {
+        LocalDateTime startDateTime = null;
+        LocalDateTime endDateTime = null;
+
+        if (startDate != null) {
+            startDateTime = startDate.atStartOfDay();
+        }
+
+        if (endDate != null) {
+            endDateTime = endDate.atTime(LocalTime.MAX);
+        }
+
+        if (startDate != null && endDate == null) {
+            endDateTime = startDate.atTime(LocalTime.MAX);
+        }
+
+        Specification<Order> spec = Specification.allOf(
+                OrderSpecification.withStatus(status),
+                OrderSpecification.withStartDate(startDateTime),
+                OrderSpecification.withEndDate(endDateTime));
+
+        List<Order> orders = orderRepository.findAll(spec);
+        return orderMapper.toSummaryDtoList(orders);
+    }
+
     @Transactional
     public OrderResponseDto updateOrderStatus(String id, OrderStatus newStatus) {
         Order order = findById(id);
@@ -165,5 +201,10 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return subtotal;
+    }
+
+    private LocalDate parseStringDate(String date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        return LocalDate.parse(date, formatter);
     }
 }

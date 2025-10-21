@@ -5,12 +5,15 @@ import com.deliverytech.delivery_api.dto.request.OrderStatusUpdateRequestDto;
 import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
 import com.deliverytech.delivery_api.dto.response.OrderSummaryResponseDto;
 import com.deliverytech.delivery_api.dto.response.OrderTotalResponseDto;
+import com.deliverytech.delivery_api.model.enums.OrderStatus;
 import com.deliverytech.delivery_api.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -30,6 +33,15 @@ public class OrderController {
     public ResponseEntity<OrderTotalResponseDto> calculateOrderTotal(@Valid @RequestBody OrderRequestDto dto) {
         var response = orderService.calculateOrderTotal(dto);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<OrderSummaryResponseDto>> searchOrders(
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        List<OrderSummaryResponseDto> orders = orderService.searchOrders(status, startDate, endDate);
+        return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/{id}")
