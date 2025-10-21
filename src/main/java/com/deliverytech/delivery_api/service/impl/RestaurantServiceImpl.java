@@ -83,6 +83,13 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurantRepository.findAll();
     }
 
+    public List<RestaurantResponseDto> findRestaurantsNearby(String cep) {
+        // TODO: add search by cep logic and integration
+
+        List<Restaurant> restaurants = findAllActive();
+        return restaurants.stream().map(mapper::toDto).toList();
+    }
+
     public RestaurantResponseDto updateRestaurant(String id, RestaurantRequestDto dto) {
         Restaurant existingRestaurant = findById(UUID.fromString(id));
 

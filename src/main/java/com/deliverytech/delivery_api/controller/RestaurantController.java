@@ -80,6 +80,15 @@ public class RestaurantController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping(value = "/nearby", params = "cep")
+    public ResponseEntity<List<RestaurantResponseDto>> findRestaurantsNearby(
+            @RequestParam
+            @Pattern(regexp = "\\d{5}-?\\d{3}", message = "Formato de CEP inválido. Use XXXXX-XXX ou XXXXXXXX.")
+            String cep) {
+        var restaurants = restaurantService.findRestaurantsNearby(cep);
+        return ResponseEntity.ok(restaurants);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<RestaurantResponseDto> updateRestaurant(@PathVariable String id,
                                                                   @Valid @RequestBody RestaurantRequestDto dto) {
