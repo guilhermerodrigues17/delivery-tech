@@ -11,6 +11,8 @@ import com.deliverytech.delivery_api.repository.ProductRepository;
 import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,6 +55,21 @@ public class ProductServiceImpl implements ProductService {
 
         var products = productRepository.findByRestaurantId(restaurant.getId());
 
+        return products.stream().map(productMapper::toResponseDto).toList();
+    }
+
+    @Override
+    public List<ProductResponseDto> searchProducts(String name, String category) {
+        Product product = new Product();
+        product.setName(name);
+        product.setCategory(category);
+        product.setAvailable(true);
+
+        ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues().withIgnoreCase()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        Example<Product> productExample = Example.of(product, matcher);
+
+        List<Product> products = productRepository.findAll(productExample);
         return products.stream().map(productMapper::toResponseDto).toList();
     }
 

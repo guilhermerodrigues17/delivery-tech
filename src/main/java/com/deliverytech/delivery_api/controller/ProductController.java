@@ -28,6 +28,14 @@ public class ProductController {
         return ResponseEntity.created(null).body(response);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<ProductResponseDto>> searchProducts(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String category) {
+        List<ProductResponseDto> products = productService.searchProducts(name, category);
+        return ResponseEntity.ok(products);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDto> findProductById(@PathVariable String id) {
         var response = productService.findProductByIdResponse(id);
@@ -48,7 +56,7 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("{id}")
+    @PatchMapping("/{id}/status")
     public ResponseEntity<Void> toggleAvailability(@PathVariable String id) {
         productService.toggleAvailability(id);
         return ResponseEntity.noContent().build();

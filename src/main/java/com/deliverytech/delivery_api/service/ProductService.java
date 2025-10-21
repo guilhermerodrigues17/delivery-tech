@@ -11,6 +11,7 @@ public interface ProductService {
     ProductResponseDto findProductByIdResponse(String id);
     Product findProductEntityById(String id);
     List<ProductResponseDto> findProductsByRestaurantIdResponse(String restaurantId);
+    List<ProductResponseDto> searchProducts(String name, String category);
     ProductResponseDto updateProduct(String id, ProductRequestDto dto);
     void deleteProduct(String id);
     void toggleAvailability(String id);
