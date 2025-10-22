@@ -1,5 +1,6 @@
 package com.deliverytech.delivery_api.controller;
 
+import com.deliverytech.delivery_api.dto.response.ActiveConsumerReportDto;
 import com.deliverytech.delivery_api.dto.response.SalesByRestaurantReportDto;
 import com.deliverytech.delivery_api.dto.response.TopSellingProductReportDto;
 import com.deliverytech.delivery_api.service.ReportService;
@@ -28,6 +29,12 @@ public class ReportController {
     public ResponseEntity<List<TopSellingProductReportDto>> getTopSellingProducts() {
         List<TopSellingProductReportDto> topSellingProducts = reportService.getTopSellingProducts();
         return ResponseEntity.ok(topSellingProducts);
+    }
+
+    @GetMapping("/active-consumers")
+    public ResponseEntity<List<ActiveConsumerReportDto>> getActiveConsumers() {
+        List<ActiveConsumerReportDto> activeConsumers = reportService.getActiveConsumers();
+        return ResponseEntity.ok(activeConsumers);
     }
 
 }

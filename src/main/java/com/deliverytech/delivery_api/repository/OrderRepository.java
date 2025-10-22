@@ -2,6 +2,7 @@ package com.deliverytech.delivery_api.repository;
 
 import com.deliverytech.delivery_api.model.Order;
 import com.deliverytech.delivery_api.model.enums.OrderStatus;
+import com.deliverytech.delivery_api.repository.projection.ActiveConsumerProjection;
 import com.deliverytech.delivery_api.repository.projection.SalesByRestaurantProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -38,4 +39,10 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
     List<Order> reportOrdersByPeriodAndStatus(@Param("startDate") LocalDateTime startDate,
                                               @Param("endDate") LocalDateTime endDate,
                                               @Param("status") OrderStatus status);
+
+    @Query("SELECT o.consumer.name as consumerName, o.consumer.email as consumerEmail, COUNT (o.id) as totalOrders " +
+            "FROM Order o WHERE o.status = 'DELIVERED' " +
+            "GROUP BY o.consumer.id, o.consumer.name, o.consumer.email " +
+            "ORDER BY totalOrders DESC LIMIT 5")
+    List<ActiveConsumerProjection> getActiveConsumers();
 }
