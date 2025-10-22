@@ -1,9 +1,11 @@
 package com.deliverytech.delivery_api.mapper;
 
 import com.deliverytech.delivery_api.dto.response.ActiveConsumerReportDto;
+import com.deliverytech.delivery_api.dto.response.OrderByPeriodReportDto;
 import com.deliverytech.delivery_api.dto.response.SalesByRestaurantReportDto;
 import com.deliverytech.delivery_api.dto.response.TopSellingProductReportDto;
 import com.deliverytech.delivery_api.repository.projection.ActiveConsumerProjection;
+import com.deliverytech.delivery_api.repository.projection.OrderByPeriodProjection;
 import com.deliverytech.delivery_api.repository.projection.SalesByRestaurantProjection;
 import com.deliverytech.delivery_api.repository.projection.TopSellingProductProjection;
 import org.mapstruct.Mapper;
@@ -18,4 +20,6 @@ public interface ReportMapper {
     List<TopSellingProductReportDto> toTopSellingDtoList(List<TopSellingProductProjection> projections);
 
     List<ActiveConsumerReportDto> toActiveConsumerDtoList(List<ActiveConsumerProjection> projections);
+
+    List<OrderByPeriodReportDto> toOrderByPeriodAndStatusDtoList(List<OrderByPeriodProjection> projections);
 }
