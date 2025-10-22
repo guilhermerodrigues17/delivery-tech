@@ -2,6 +2,7 @@ package com.deliverytech.delivery_api.repository;
 
 import com.deliverytech.delivery_api.model.Order;
 import com.deliverytech.delivery_api.model.enums.OrderStatus;
+import com.deliverytech.delivery_api.repository.projection.SalesByRestaurantProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -23,10 +24,11 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
 
     List<Order> findTop10ByOrderByOrderDateDesc();
 
-    @Query("SELECT o.restaurant.name, SUM(o.total) FROM Order o "
+    @Query("SELECT o.restaurant.name as restaurantName, SUM(o.total) as totalSales FROM Order o "
+            + "WHERE o.status = 'DELIVERED' "
             + "GROUP BY o.restaurant.id, o.restaurant.name "
-            + "ORDER BY SUM(o.total) DESC")
-    List<Object[]> calculateTotalSalesPerRestaurant();
+            + "ORDER BY totalSales DESC")
+    List<SalesByRestaurantProjection> getSalesByRestaurantReport();
 
     @Query("SELECT o FROM Order o WHERE o.total > :value ORDER BY o.total DESC")
     List<Order> findOrdersWithTotalGreaterThan(@Param("value") BigDecimal value);
