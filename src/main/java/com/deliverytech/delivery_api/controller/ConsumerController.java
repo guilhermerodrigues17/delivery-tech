@@ -10,6 +10,7 @@ import com.deliverytech.delivery_api.service.ConsumerService;
 import com.deliverytech.delivery_api.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -114,7 +115,9 @@ public class ConsumerController {
                     description = "Lista de clientes encontrados",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ConsumerResponseDto.class)
+                            array = @ArraySchema(
+                                    schema = @Schema(implementation = ConsumerResponseDto.class)
+                            )
                     )
             )
     })
@@ -161,7 +164,9 @@ public class ConsumerController {
                     description = "Lista de pedidos encontrados",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = OrderSummaryResponseDto.class)
+                            array = @ArraySchema(
+                                    schema = @Schema(implementation = OrderSummaryResponseDto.class)
+                            )
                     )
             ),
             @ApiResponse(
