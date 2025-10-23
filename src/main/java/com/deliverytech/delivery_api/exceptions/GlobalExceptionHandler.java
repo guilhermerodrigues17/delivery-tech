@@ -64,6 +64,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    private ResponseEntity<ErrorMessage> handleIllegalArgumentException(
+            IllegalArgumentException ex) {
+        var errorBody = new ErrorMessage();
+        errorBody.setMessage(ex.getMessage());
+        errorBody.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody);
+    }
+
     @ExceptionHandler(DuplicatedRegisterException.class)
     private ResponseEntity<ErrorMessage> handleDuplicatedRegisterException(
             DuplicatedRegisterException ex) {
