@@ -5,11 +5,20 @@ import com.deliverytech.delivery_api.dto.request.RestaurantStatusUpdateDto;
 import com.deliverytech.delivery_api.dto.response.OrderSummaryResponseDto;
 import com.deliverytech.delivery_api.dto.response.ProductResponseDto;
 import com.deliverytech.delivery_api.dto.response.RestaurantResponseDto;
+import com.deliverytech.delivery_api.exceptions.ErrorMessage;
 import com.deliverytech.delivery_api.mapper.RestaurantMapper;
 import com.deliverytech.delivery_api.model.Restaurant;
 import com.deliverytech.delivery_api.service.OrderService;
 import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -26,38 +35,143 @@ import java.util.Map;
 @RequestMapping("/restaurants")
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "Restaurantes", description = "Endpoints para gerenciamento de restaurantes")
 public class RestaurantController {
     private final RestaurantService restaurantService;
     private final ProductService productService;
     private final OrderService orderService;
     private final RestaurantMapper mapper;
 
+    @Operation(summary = "Cadastrar um restaurante", description = "Cadastra um novo restaurante no sistema. O nome deve ser único.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Restaurante cadastrado com sucesso",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = RestaurantResponseDto.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Erro de validação (ex: formato inválido ou dados faltando)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Nome já cadastrado",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            )
+    })
     @PostMapping
     public ResponseEntity<RestaurantResponseDto> createRestaurant(
-            @Valid @RequestBody RestaurantRequestDto dto) {
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = RestaurantRequestDto.class)
+                    )
+            )
+            @Valid @RequestBody RestaurantRequestDto dto
+    ) {
         var restaurantEntity = mapper.toEntity(dto);
         Restaurant restaurant = restaurantService.createRestaurant(restaurantEntity);
         var response = mapper.toDto(restaurant);
         return ResponseEntity.created(null).body(response);
     }
 
+    @Operation(summary = "Buscar um restaurante por ID", description = "Retorna os dados de um restaurante baseado no UUID")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Restaurante encontrado com sucesso",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = RestaurantResponseDto.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Erro de validação (ex: formato inválido ou dados faltando)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Recurso não encontrado",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            )
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<RestaurantResponseDto> findById(@PathVariable String id) {
+    public ResponseEntity<RestaurantResponseDto> findById(
+            @Parameter(description = "ID do restaurante", required = true)
+            @PathVariable String id
+    ) {
         var uuid = java.util.UUID.fromString(id);
         Restaurant restaurant = restaurantService.findById(uuid);
         var response = mapper.toDto(restaurant);
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Listar restaurantes", description = "Retorna uma lista de restaurantes, podendo filtrar nome, categoria e se está ativo")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Restaurantes listados com sucesso",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(
+                                    schema = @Schema(implementation = RestaurantResponseDto.class)
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Erro de validação (ex: formato inválido ou dados faltando)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            ),
+    })
     @GetMapping("/search")
     public ResponseEntity<List<RestaurantResponseDto>> searchRestaurants(
+            @Parameter(description = "Nome do restaurante", required = false)
             @RequestParam(required = false) String name,
+
+            @Parameter(description = "Categoria do restaurante", required = false)
             @RequestParam(required = false) String category,
+
+            @Parameter(description = "Restaurante está ativo?", required = false)
             @RequestParam(required = false, defaultValue = "true") String active) {
         var restaurants = restaurantService.searchRestaurants(name, category, active);
         return ResponseEntity.ok(restaurants);
     }
 
+    @Operation(summary = "Listar restaurantes ativos", description = "Retorna uma lista de restaurantes ativos")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Restaurantes listados com sucesso",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(
+                                    schema = @Schema(implementation = RestaurantResponseDto.class)
+                            )
+                    )
+            ),
+    })
     @GetMapping
     public ResponseEntity<List<RestaurantResponseDto>> findAllActive() {
         var restaurant = restaurantService.findAllActive();
@@ -65,27 +179,158 @@ public class RestaurantController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Listar restaurantes por categoria", description = "Retorna uma lista de restaurantes, filtrados por categoria")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Restaurantes listados com sucesso",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(
+                                    schema = @Schema(implementation = RestaurantResponseDto.class)
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Erro de validação (ex: formato inválido ou dados faltando)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            ),
+    })
     @GetMapping(params = "category")
-    public ResponseEntity<List<RestaurantResponseDto>> findByCategory(@RequestParam String category) {
+    public ResponseEntity<List<RestaurantResponseDto>> findByCategory(
+            @Parameter(description = "Categoria dos restaurantes", required = true)
+            @RequestParam String category
+    ) {
         var response = restaurantService.findByCategory(category);
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Listar produtos de um restaurante", description = "Retorna uma lista de produtos relacionados àquele restaurante")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Produtos listados com sucesso",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(
+                                    schema = @Schema(implementation = ProductResponseDto.class)
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Erro de validação (ex: formato inválido ou dados faltando)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Recurso não encontrado",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Nome já cadastrado",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            )
+    })
     @GetMapping("/{restaurantId}/products")
-    public ResponseEntity<List<ProductResponseDto>> findProductsByRestaurantId(@PathVariable String restaurantId) {
+    public ResponseEntity<List<ProductResponseDto>> findProductsByRestaurantId(
+            @Parameter(description = "ID do restaurante", required = true)
+            @PathVariable String restaurantId
+    ) {
         var response = productService.findProductsByRestaurantIdResponse(restaurantId);
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Listar pedidos de um restaurante", description = "Retorna uma lista de pedidos relacionados àquele restaurante")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Pedidos listados com sucesso",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(
+                                    schema = @Schema(implementation = OrderSummaryResponseDto.class)
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Erro de validação (ex: formato inválido ou dados faltando)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Recurso não encontrado",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            ),
+    })
     @GetMapping("/{restaurantId}/orders")
-    public ResponseEntity<List<OrderSummaryResponseDto>> findOrdersByRestaurantId(@PathVariable String restaurantId) {
+    public ResponseEntity<List<OrderSummaryResponseDto>> findOrdersByRestaurantId(
+            @Parameter(description = "ID do restaurante", required = true)
+            @PathVariable String restaurantId
+    ) {
         List<OrderSummaryResponseDto> orders = orderService.findByRestaurantId(restaurantId);
         return ResponseEntity.ok(orders);
     }
 
+    @Operation(summary = "Calcular a taxa de entrega de um restaurante",
+            description = "Retorna a taxa de entrega para um restaurante com base no CEP fornecido")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Taxa de entrega calculada com sucesso"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Erro de validação (ex: formato inválido ou dados faltando)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Recurso não encontrado",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "422",
+                    description = "Entidade não processável",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            ),
+    })
     @GetMapping(value = "/{id}/delivery-tax", params = "cep")
     public ResponseEntity<Map<String, BigDecimal>> calculateDeliveryTax(
+            @Parameter(description = "ID do restaurante", required = true)
             @PathVariable String id,
+
+            @Parameter(description = "CEP do cliente", required = true, example = "12345-678")
             @RequestParam(required = true)
             @Pattern(regexp = "\\d{5}-?\\d{3}", message = "Formato de CEP inválido. Use XXXXX-XXX ou XXXXXXXX.")
             String cep
@@ -98,25 +343,128 @@ public class RestaurantController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Listar restaurantes próximos", description = "Retorna uma lista de restaurantes próximos baseado no CEP fornecido")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Restaurantes listados com sucesso",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(
+                                    schema = @Schema(implementation = RestaurantResponseDto.class)
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Erro de validação (ex: formato inválido ou dados faltando)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            )
+    })
     @GetMapping(value = "/nearby", params = "cep")
     public ResponseEntity<List<RestaurantResponseDto>> findRestaurantsNearby(
+            @Parameter(description = "CEP do cliente", required = true, example = "12345-678")
             @RequestParam
             @Pattern(regexp = "\\d{5}-?\\d{3}", message = "Formato de CEP inválido. Use XXXXX-XXX ou XXXXXXXX.")
-            String cep) {
+            String cep
+    ) {
         var restaurants = restaurantService.findRestaurantsNearby(cep);
         return ResponseEntity.ok(restaurants);
     }
 
+    @Operation(summary = "Atualizar dados de um restaurante", description = "Atualiza os dados de um restaurante com base no seu UUID")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Dados atualizados com sucesso",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = RestaurantResponseDto.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Erro de validação (ex: formato inválido ou dados faltando)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Recurso não encontrado",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Nome já cadastrado",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            ),
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<RestaurantResponseDto> updateRestaurant(@PathVariable String id,
-                                                                  @Valid @RequestBody RestaurantRequestDto dto) {
+    public ResponseEntity<RestaurantResponseDto> updateRestaurant(
+            @Parameter(description = "ID do restaurante a ser atualizado", required = true)
+            @PathVariable String id,
+
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = RestaurantRequestDto.class)
+                    )
+            )
+            @Valid @RequestBody RestaurantRequestDto dto
+    ) {
         var response = restaurantService.updateRestaurant(id, dto);
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Atualizar status de um restaurante", description = "Atualiza o status de um restaurante com base no seu UUID")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Dados atualizados com sucesso"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Erro de validação (ex: formato inválido ou dados faltando)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Recurso não encontrado",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    )
+            ),
+    })
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Void> updateStatusActive(@PathVariable String id,
-                                                   @Valid @RequestBody RestaurantStatusUpdateDto dto) {
+    public ResponseEntity<Void> updateStatusActive(
+            @Parameter(description = "ID do restaurante a ser atualizado", required = true)
+            @PathVariable String id,
+
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = RestaurantStatusUpdateDto.class)
+                    )
+            )
+            @Valid @RequestBody RestaurantStatusUpdateDto dto
+    ) {
         restaurantService.updateStatusActive(id, dto);
         return ResponseEntity.noContent().build();
     }
