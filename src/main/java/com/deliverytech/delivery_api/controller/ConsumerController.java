@@ -3,6 +3,7 @@ package com.deliverytech.delivery_api.controller;
 import com.deliverytech.delivery_api.dto.request.ConsumerRequestDto;
 import com.deliverytech.delivery_api.dto.response.ConsumerResponseDto;
 import com.deliverytech.delivery_api.dto.response.OrderSummaryResponseDto;
+import com.deliverytech.delivery_api.dto.response.wrappers.PagedResponseWrapper;
 import com.deliverytech.delivery_api.exceptions.ErrorMessage;
 import com.deliverytech.delivery_api.mapper.ConsumerMapper;
 import com.deliverytech.delivery_api.model.Consumer;
@@ -18,6 +19,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -115,17 +119,18 @@ public class ConsumerController {
                     description = "Lista de clientes encontrados",
                     content = @Content(
                             mediaType = "application/json",
-                            array = @ArraySchema(
-                                    schema = @Schema(implementation = ConsumerResponseDto.class)
-                            )
+                            schema = @Schema(implementation = PagedResponseWrapper.class)
                     )
             )
     })
     @GetMapping
-    public ResponseEntity<List<ConsumerResponseDto>> findAllActive() {
-        List<Consumer> consumers = consumerService.findAllActive();
-        var response = consumers.stream().map(mapper::toDto).toList();
-        return ResponseEntity.ok(response);
+    public ResponseEntity<PagedResponseWrapper<ConsumerResponseDto>> findAllActive(
+            @ParameterObject Pageable pageable
+    ) {
+        Page<ConsumerResponseDto> consumersPage = consumerService.findAllActive(pageable);
+        var consumersResponse = PagedResponseWrapper.of(consumersPage);
+
+        return ResponseEntity.ok(consumersResponse);
     }
 
     @Operation(summary = "Busca um cliente por e-mail", description = "Retorna os dados de um cliente específico baseado no e-mail")
@@ -147,10 +152,10 @@ public class ConsumerController {
                     )
             ),
     })
-    @GetMapping(params = "email")
+    @GetMapping("/{email}")
     public ResponseEntity<ConsumerResponseDto> findConsumerByEmail(
             @Parameter(description = "E-mail do cliente a ser buscado", required = true)
-            @RequestParam String email) {
+            @PathVariable String email) {
         var consumer = consumerService.findByEmail(email);
         var response = mapper.toDto(consumer);
         return ResponseEntity.ok(response);

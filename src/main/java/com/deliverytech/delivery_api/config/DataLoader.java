@@ -9,6 +9,8 @@ import com.deliverytech.delivery_api.repository.ProductRepository;
 import com.deliverytech.delivery_api.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -260,8 +262,8 @@ public class DataLoader implements CommandLineRunner {
                 + (consumerByEmail.isPresent() ? consumerByEmail.get().getName()
                 : "Não encontrado"));
 
-        var activeConsumers = consumerRepository.findByActiveTrue();
-        System.out.println("\nClientes ativos: " + activeConsumers.size());
+        Page<Consumer> activeConsumers = consumerRepository.findByActiveTrue(Pageable.unpaged());
+        System.out.println("\nClientes ativos: " + activeConsumers.getTotalElements());
 
         var consumersByName = consumerRepository.findByNameContainingIgnoreCase("silva");
         System.out.println("\nClientes com 'silva' no nome: " + consumersByName.size());

@@ -9,9 +9,10 @@ import com.deliverytech.delivery_api.model.Consumer;
 import com.deliverytech.delivery_api.repository.ConsumerRepository;
 import com.deliverytech.delivery_api.service.ConsumerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -44,8 +45,9 @@ public class ConsumerServiceImpl implements ConsumerService {
         return consumerRepository.existsByEmail(email);
     }
 
-    public List<Consumer> findAllActive() {
-        return consumerRepository.findByActiveTrue();
+    public Page<ConsumerResponseDto> findAllActive(Pageable pageable) {
+        Page<Consumer> consumerPage = consumerRepository.findByActiveTrue(pageable);
+        return consumerPage.map(mapper::toDto);
     }
 
     public ConsumerResponseDto updateConsumer(String id, ConsumerRequestDto dto) {
