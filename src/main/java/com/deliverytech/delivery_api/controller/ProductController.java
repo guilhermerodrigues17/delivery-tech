@@ -4,6 +4,7 @@ import com.deliverytech.delivery_api.dto.request.OrderRequestDto;
 import com.deliverytech.delivery_api.dto.request.ProductRequestDto;
 import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
 import com.deliverytech.delivery_api.dto.response.ProductResponseDto;
+import com.deliverytech.delivery_api.dto.response.wrappers.PagedResponseWrapper;
 import com.deliverytech.delivery_api.exceptions.ErrorMessage;
 import com.deliverytech.delivery_api.mapper.ProductMapper;
 import com.deliverytech.delivery_api.model.Product;
@@ -18,6 +19,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -82,9 +86,7 @@ public class ProductController {
                     description = "Produtos listados com sucesso",
                     content = @Content(
                             mediaType = "application/json",
-                            array = @ArraySchema(
-                                    schema = @Schema(implementation = ProductResponseDto.class)
-                            )
+                            schema = @Schema(implementation = PagedResponseWrapper.class)
                     )
             ),
             @ApiResponse(
@@ -97,15 +99,18 @@ public class ProductController {
             )
     })
     @GetMapping("/search")
-    public ResponseEntity<List<ProductResponseDto>> searchProducts(
+    public ResponseEntity<PagedResponseWrapper<ProductResponseDto>> searchProducts(
             @Parameter(description = "Nome do produto", required = false, example = "Lasanha")
             @RequestParam(required = false) String name,
 
             @Parameter(description = "Categoria do produto", required = false, example = "Massas")
-            @RequestParam(required = false) String category
+            @RequestParam(required = false) String category,
+
+            @ParameterObject Pageable pageable
     ) {
-        List<ProductResponseDto> products = productService.searchProducts(name, category);
-        return ResponseEntity.ok(products);
+        Page<ProductResponseDto> productsPage = productService.searchProducts(name, category, pageable);
+        var productsResponse = PagedResponseWrapper.of(productsPage);
+        return ResponseEntity.ok(productsResponse);
     }
 
     @Operation(summary = "Buscar um produto por ID", description = "Retorna um produto baseado no UUID fornecido.")

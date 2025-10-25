@@ -13,6 +13,8 @@ import com.deliverytech.delivery_api.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,7 +60,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponseDto> searchProducts(String name, String category) {
+    public Page<ProductResponseDto> searchProducts(String name, String category, Pageable pageable) {
         Product product = new Product();
         product.setName(name);
         product.setCategory(category);
@@ -68,8 +70,8 @@ public class ProductServiceImpl implements ProductService {
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<Product> productExample = Example.of(product, matcher);
 
-        List<Product> products = productRepository.findAll(productExample);
-        return products.stream().map(productMapper::toResponseDto).toList();
+        Page<Product> productsPage = productRepository.findAll(productExample, pageable);
+        return productsPage.map(productMapper::toResponseDto);
     }
 
     @Transactional
