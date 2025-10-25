@@ -5,6 +5,7 @@ import com.deliverytech.delivery_api.dto.request.RestaurantStatusUpdateDto;
 import com.deliverytech.delivery_api.dto.response.OrderSummaryResponseDto;
 import com.deliverytech.delivery_api.dto.response.ProductResponseDto;
 import com.deliverytech.delivery_api.dto.response.RestaurantResponseDto;
+import com.deliverytech.delivery_api.dto.response.wrappers.PagedResponseWrapper;
 import com.deliverytech.delivery_api.exceptions.ErrorMessage;
 import com.deliverytech.delivery_api.mapper.RestaurantMapper;
 import com.deliverytech.delivery_api.model.Restaurant;
@@ -22,6 +23,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -131,9 +135,7 @@ public class RestaurantController {
                     description = "Restaurantes listados com sucesso",
                     content = @Content(
                             mediaType = "application/json",
-                            array = @ArraySchema(
-                                    schema = @Schema(implementation = RestaurantResponseDto.class)
-                            )
+                            schema = @Schema(implementation = PagedResponseWrapper.class)
                     )
             ),
             @ApiResponse(
@@ -146,7 +148,7 @@ public class RestaurantController {
             ),
     })
     @GetMapping("/search")
-    public ResponseEntity<List<RestaurantResponseDto>> searchRestaurants(
+    public ResponseEntity<PagedResponseWrapper<RestaurantResponseDto>> searchRestaurants(
             @Parameter(description = "Nome do restaurante", required = false)
             @RequestParam(required = false) String name,
 
@@ -154,29 +156,31 @@ public class RestaurantController {
             @RequestParam(required = false) String category,
 
             @Parameter(description = "Restaurante está ativo?", required = false)
-            @RequestParam(required = false, defaultValue = "true") String active) {
-        var restaurants = restaurantService.searchRestaurants(name, category, active);
-        return ResponseEntity.ok(restaurants);
+            @RequestParam(required = false, defaultValue = "true") String active,
+
+            @ParameterObject Pageable pageable
+    ) {
+        var restaurantsPage = restaurantService.searchRestaurants(name, category, active, pageable);
+        var restaurantsResponse = PagedResponseWrapper.of(restaurantsPage);
+        return ResponseEntity.ok(restaurantsResponse);
     }
 
     @Operation(summary = "Listar restaurantes ativos", description = "Retorna uma lista de restaurantes ativos")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Restaurantes listados com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            array = @ArraySchema(
-                                    schema = @Schema(implementation = RestaurantResponseDto.class)
-                            )
-                    )
-            ),
-    })
+    @ApiResponse(
+            responseCode = "200",
+            description = "Restaurantes listados com sucesso",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = PagedResponseWrapper.class)
+            )
+    )
     @GetMapping
-    public ResponseEntity<List<RestaurantResponseDto>> findAllActive() {
-        var restaurant = restaurantService.findAllActive();
-        var response = restaurant.stream().map(mapper::toDto).toList();
-        return ResponseEntity.ok(response);
+    public ResponseEntity<PagedResponseWrapper<RestaurantResponseDto>> findAllActive(
+            @ParameterObject Pageable pageable
+    ) {
+        Page<RestaurantResponseDto> restaurantsPage = restaurantService.findAllActive(pageable);
+        var restaurantsResponse = PagedResponseWrapper.of(restaurantsPage);
+        return ResponseEntity.ok(restaurantsResponse);
     }
 
     @Operation(summary = "Listar restaurantes por categoria", description = "Retorna uma lista de restaurantes, filtrados por categoria")
@@ -203,7 +207,7 @@ public class RestaurantController {
     @GetMapping(params = "category")
     public ResponseEntity<List<RestaurantResponseDto>> findByCategory(
             @Parameter(description = "Categoria dos restaurantes", required = true)
-            @RequestParam String category
+            @RequestParam("category") String category
     ) {
         var response = restaurantService.findByCategory(category);
         return ResponseEntity.ok(response);

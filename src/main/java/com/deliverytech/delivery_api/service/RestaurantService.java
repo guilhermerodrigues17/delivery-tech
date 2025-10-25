@@ -4,6 +4,8 @@ import com.deliverytech.delivery_api.dto.request.RestaurantRequestDto;
 import com.deliverytech.delivery_api.dto.request.RestaurantStatusUpdateDto;
 import com.deliverytech.delivery_api.dto.response.RestaurantResponseDto;
 import com.deliverytech.delivery_api.model.Restaurant;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -15,8 +17,8 @@ public interface RestaurantService {
     Restaurant findByName(String name);
     Boolean existsByName(String name);
     List<RestaurantResponseDto> findByCategory(String category);
-    List<RestaurantResponseDto> searchRestaurants(String name, String category, String active);
-    List<Restaurant> findAllActive();
+    Page<RestaurantResponseDto> searchRestaurants(String name, String category, String active, Pageable pageable);
+    Page<RestaurantResponseDto> findAllActive(Pageable pageable);
     List<Restaurant> findAll();
     List<RestaurantResponseDto> findRestaurantsNearby(String cep);
     RestaurantResponseDto updateRestaurant(String id, RestaurantRequestDto dto);

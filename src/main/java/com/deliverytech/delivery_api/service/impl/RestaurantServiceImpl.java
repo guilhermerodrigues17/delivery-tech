@@ -14,6 +14,8 @@ import com.deliverytech.delivery_api.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,7 +62,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurants.stream().map(mapper::toDto).toList();
     }
 
-    public List<RestaurantResponseDto> searchRestaurants(String name, String category, String active) {
+    public Page<RestaurantResponseDto> searchRestaurants(String name, String category, String active, Pageable pageable) {
         var restaurant = new Restaurant();
         restaurant.setName(name);
         restaurant.setCategory(category);
@@ -71,12 +73,13 @@ public class RestaurantServiceImpl implements RestaurantService {
 
         Example<Restaurant> restaurantExample = Example.of(restaurant, matcher);
 
-        List<Restaurant> restaurants = restaurantRepository.findAll(restaurantExample);
-        return restaurants.stream().map(mapper::toDto).toList();
+        Page<Restaurant> restaurants = restaurantRepository.findAll(restaurantExample, pageable);
+        return restaurants.map(mapper::toDto);
     }
 
-    public List<Restaurant> findAllActive() {
-        return restaurantRepository.findByActiveTrue();
+    public Page<RestaurantResponseDto> findAllActive(Pageable pageable) {
+        Page<Restaurant> restaurantsPage = restaurantRepository.findByActiveTrue(pageable);
+        return restaurantsPage.map(mapper::toDto);
     }
 
     public List<Restaurant> findAll() {
@@ -86,8 +89,8 @@ public class RestaurantServiceImpl implements RestaurantService {
     public List<RestaurantResponseDto> findRestaurantsNearby(String cep) {
         // TODO: add search by cep logic and integration
 
-        List<Restaurant> restaurants = findAllActive();
-        return restaurants.stream().map(mapper::toDto).toList();
+        Page<RestaurantResponseDto> restaurants = findAllActive(Pageable.unpaged());
+        return restaurants.getContent();
     }
 
     public RestaurantResponseDto updateRestaurant(String id, RestaurantRequestDto dto) {

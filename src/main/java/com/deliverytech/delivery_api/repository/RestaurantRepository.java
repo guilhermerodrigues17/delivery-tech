@@ -1,6 +1,8 @@
 package com.deliverytech.delivery_api.repository;
 
 import com.deliverytech.delivery_api.model.Restaurant;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.math.BigDecimal;
@@ -16,7 +18,7 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, UUID> {
 
     List<Restaurant> findByCategory(String category);
 
-    List<Restaurant> findByActiveTrue();
+    Page<Restaurant> findByActiveTrue(Pageable pageable);
 
     List<Restaurant> findByDeliveryTaxLessThanEqual(BigDecimal deliveryTax);
 

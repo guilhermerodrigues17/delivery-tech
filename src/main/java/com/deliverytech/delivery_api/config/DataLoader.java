@@ -286,8 +286,8 @@ public class DataLoader implements CommandLineRunner {
         var restaurantsByCategory = restaurantRepository.findByCategory("Fast Food");
         System.out.println("\nRestaurantes de Fast Food: " + restaurantsByCategory.size());
 
-        var activeRestaurants = restaurantRepository.findByActiveTrue();
-        System.out.println("\nRestaurantes ativos: " + activeRestaurants.size());
+        var activeRestaurants = restaurantRepository.findByActiveTrue(Pageable.unpaged());
+        System.out.println("\nRestaurantes ativos: " + activeRestaurants.getTotalElements());
 
         var restaurantsByDeliveryTax =
                 restaurantRepository.findByDeliveryTaxLessThanEqual(new BigDecimal("10.00"));
