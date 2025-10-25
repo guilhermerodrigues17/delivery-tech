@@ -5,6 +5,7 @@ import com.deliverytech.delivery_api.dto.request.OrderStatusUpdateRequestDto;
 import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
 import com.deliverytech.delivery_api.dto.response.OrderSummaryResponseDto;
 import com.deliverytech.delivery_api.dto.response.OrderTotalResponseDto;
+import com.deliverytech.delivery_api.dto.response.wrappers.PagedResponseWrapper;
 import com.deliverytech.delivery_api.exceptions.ErrorMessage;
 import com.deliverytech.delivery_api.model.enums.OrderStatus;
 import com.deliverytech.delivery_api.service.OrderService;
@@ -18,6 +19,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -142,9 +146,7 @@ public class OrderController {
                     description = "Pedidos listados com sucesso",
                     content = @Content(
                             mediaType = "application/json",
-                            array = @ArraySchema(
-                                schema = @Schema(implementation = OrderSummaryResponseDto.class)
-                            )
+                            schema = @Schema(implementation = PagedResponseWrapper.class)
                     )
             ),
             @ApiResponse(
@@ -157,7 +159,7 @@ public class OrderController {
             )
     })
     @GetMapping
-    public ResponseEntity<List<OrderSummaryResponseDto>> searchOrders(
+    public ResponseEntity<PagedResponseWrapper<OrderSummaryResponseDto>> searchOrders(
             @Parameter(description = "Filtrar pedidos pelo status", example = "DELIVERED", required = false)
             @RequestParam(required = false) OrderStatus status,
 
@@ -165,10 +167,13 @@ public class OrderController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
 
             @Parameter(description = "Data final do período de busca", example = "2025-10-02", required = false)
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
-    ) {
-        List<OrderSummaryResponseDto> orders = orderService.searchOrders(status, startDate, endDate);
-        return ResponseEntity.ok(orders);
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+
+            @ParameterObject Pageable pageable
+            ) {
+        Page<OrderSummaryResponseDto> ordersPage = orderService.searchOrders(status, startDate, endDate, pageable);
+        var ordersResponse = PagedResponseWrapper.of(ordersPage);
+        return ResponseEntity.ok(ordersResponse);
     }
 
     @Operation(summary = "Buscar pedido por ID", description = "Retorna os dados de um pedido baseado no UUID")

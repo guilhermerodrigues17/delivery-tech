@@ -17,9 +17,7 @@ import com.deliverytech.delivery_api.service.OrderService;
 import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -122,29 +120,21 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<OrderSummaryResponseDto> searchOrders(OrderStatus status, LocalDate startDate, LocalDate endDate) {
+    public Page<OrderSummaryResponseDto> searchOrders(OrderStatus status, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         LocalDateTime startDateTime = null;
         LocalDateTime endDateTime = null;
 
-        if (startDate != null) {
-            startDateTime = startDate.atStartOfDay();
-        }
-
-        if (endDate != null) {
-            endDateTime = endDate.atTime(LocalTime.MAX);
-        }
-
-        if (startDate != null && endDate == null) {
-            endDateTime = startDate.atTime(LocalTime.MAX);
-        }
+        if (startDate != null) startDateTime = startDate.atStartOfDay();
+        if (endDate != null) endDateTime = endDate.atTime(LocalTime.MAX);
+        if (startDate != null && endDate == null) endDateTime = startDate.atTime(LocalTime.MAX);
 
         Specification<Order> spec = Specification.allOf(
                 OrderSpecification.withStatus(status),
                 OrderSpecification.withStartDate(startDateTime),
                 OrderSpecification.withEndDate(endDateTime));
 
-        List<Order> orders = orderRepository.findAll(spec);
-        return orderMapper.toSummaryDtoList(orders);
+        Page<Order> ordersPage = orderRepository.findAll(spec, pageable);
+        return ordersPage.map(orderMapper::toSummaryDto);
     }
 
     @Transactional
