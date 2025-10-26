@@ -1,7 +1,7 @@
 package com.deliverytech.delivery_api.controller;
 
 import com.deliverytech.delivery_api.dto.response.*;
-import com.deliverytech.delivery_api.exceptions.ErrorMessage;
+import com.deliverytech.delivery_api.dto.response.errors.ErrorResponse;
 import com.deliverytech.delivery_api.model.enums.OrderStatus;
 import com.deliverytech.delivery_api.service.ReportService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -108,7 +108,7 @@ public class ReportController {
                     content = @Content(
                             mediaType = "application/json",
                             array = @ArraySchema(
-                                    schema = @Schema(implementation = ErrorMessage.class)
+                                    schema = @Schema(implementation = ErrorResponse.class)
                             )
                     )
             )

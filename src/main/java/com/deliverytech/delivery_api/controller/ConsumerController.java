@@ -3,9 +3,9 @@ package com.deliverytech.delivery_api.controller;
 import com.deliverytech.delivery_api.dto.request.ConsumerRequestDto;
 import com.deliverytech.delivery_api.dto.response.ConsumerResponseDto;
 import com.deliverytech.delivery_api.dto.response.OrderSummaryResponseDto;
+import com.deliverytech.delivery_api.dto.response.errors.ErrorResponse;
 import com.deliverytech.delivery_api.dto.response.wrappers.ApiResponseWrapper;
 import com.deliverytech.delivery_api.dto.response.wrappers.PagedResponseWrapper;
-import com.deliverytech.delivery_api.exceptions.ErrorMessage;
 import com.deliverytech.delivery_api.mapper.ConsumerMapper;
 import com.deliverytech.delivery_api.service.ConsumerService;
 import com.deliverytech.delivery_api.service.OrderService;
@@ -48,7 +48,7 @@ public class ConsumerController {
                     description = "Erro de validação (ex: formato de e-mail inválido ou dados faltando)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
             @ApiResponse(
@@ -56,7 +56,7 @@ public class ConsumerController {
                     description = "E-mail já cadastrado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             )
     })
@@ -87,7 +87,7 @@ public class ConsumerController {
                     description = "Cliente não encontrado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             )
     })
@@ -130,11 +130,11 @@ public class ConsumerController {
                     description = "Cliente não encontrado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
     })
-    @GetMapping("/{email}")
+    @GetMapping("/email/{email}")
     public ResponseEntity<ApiResponseWrapper<ConsumerResponseDto>> findConsumerByEmail(
             @Parameter(description = "E-mail do cliente a ser buscado", required = true)
             @PathVariable String email) {
@@ -161,7 +161,7 @@ public class ConsumerController {
                     description = "Cliente não encontrado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             )
     })
@@ -184,14 +184,14 @@ public class ConsumerController {
                     responseCode = "404",
                     description = "Cliente não encontrado",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class))
+                            schema = @Schema(implementation = ErrorResponse.class))
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Erro de validação (ex: formato de e-mail inválido ou dados faltando)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
             @ApiResponse(
@@ -199,7 +199,7 @@ public class ConsumerController {
                     description = "E-mail já cadastrado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             )
     })
@@ -232,7 +232,7 @@ public class ConsumerController {
                     responseCode = "404",
                     description = "Cliente não encontrado",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class))
+                            schema = @Schema(implementation = ErrorResponse.class))
             ),
     })
     @DeleteMapping("/{id}")

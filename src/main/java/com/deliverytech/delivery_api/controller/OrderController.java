@@ -5,9 +5,9 @@ import com.deliverytech.delivery_api.dto.request.OrderStatusUpdateRequestDto;
 import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
 import com.deliverytech.delivery_api.dto.response.OrderSummaryResponseDto;
 import com.deliverytech.delivery_api.dto.response.OrderTotalResponseDto;
+import com.deliverytech.delivery_api.dto.response.errors.ErrorResponse;
 import com.deliverytech.delivery_api.dto.response.wrappers.ApiResponseWrapper;
 import com.deliverytech.delivery_api.dto.response.wrappers.PagedResponseWrapper;
-import com.deliverytech.delivery_api.exceptions.ErrorMessage;
 import com.deliverytech.delivery_api.model.enums.OrderStatus;
 import com.deliverytech.delivery_api.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,7 +47,7 @@ public class OrderController {
                     description = "Erro de validação (ex: formato de UUID inválido ou dados faltando)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
             @ApiResponse(
@@ -55,7 +55,7 @@ public class OrderController {
                     description = "Recurso não encontrado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
             @ApiResponse(
@@ -63,7 +63,7 @@ public class OrderController {
                     description = "Entidade não processável",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             )
     })
@@ -95,7 +95,7 @@ public class OrderController {
                     description = "Erro de validação (ex: formato inválido ou dados faltando)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
             @ApiResponse(
@@ -103,7 +103,7 @@ public class OrderController {
                     description = "Recurso não encontrado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
             @ApiResponse(
@@ -111,7 +111,7 @@ public class OrderController {
                     description = "Entidade não processável",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             )
     })
@@ -143,7 +143,7 @@ public class OrderController {
                     description = "Erro de validação (ex: formato inválido ou dados faltando)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             )
     })
@@ -176,7 +176,7 @@ public class OrderController {
                     description = "Erro de validação (ex: formato inválido ou dados faltando)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
             @ApiResponse(
@@ -184,7 +184,7 @@ public class OrderController {
                     description = "Recurso não encontrado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             )
     })
@@ -209,7 +209,7 @@ public class OrderController {
                     description = "Erro de validação (ex: formato inválido ou dados faltando)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
             @ApiResponse(
@@ -217,7 +217,7 @@ public class OrderController {
                     description = "Recurso não encontrado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
             @ApiResponse(
@@ -225,7 +225,7 @@ public class OrderController {
                     description = "Entidade não processável",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             )
     })
@@ -259,7 +259,7 @@ public class OrderController {
                     responseCode = "404",
                     description = "Recurso não encontrado",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class))
+                            schema = @Schema(implementation = ErrorResponse.class))
             ),
     })
     @DeleteMapping("/{id}")

@@ -2,9 +2,9 @@ package com.deliverytech.delivery_api.controller;
 
 import com.deliverytech.delivery_api.dto.request.ProductRequestDto;
 import com.deliverytech.delivery_api.dto.response.ProductResponseDto;
+import com.deliverytech.delivery_api.dto.response.errors.ErrorResponse;
 import com.deliverytech.delivery_api.dto.response.wrappers.ApiResponseWrapper;
 import com.deliverytech.delivery_api.dto.response.wrappers.PagedResponseWrapper;
-import com.deliverytech.delivery_api.exceptions.ErrorMessage;
 import com.deliverytech.delivery_api.mapper.ProductMapper;
 import com.deliverytech.delivery_api.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,7 +41,7 @@ public class ProductController {
                     description = "Erro de validação (ex: formato inválido ou dados faltando)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
             @ApiResponse(
@@ -49,7 +49,7 @@ public class ProductController {
                     description = "Recurso não encontrado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             )
     })
@@ -80,7 +80,7 @@ public class ProductController {
                     description = "Erro de validação (ex: formato inválido ou dados faltando)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             )
     })
@@ -110,7 +110,7 @@ public class ProductController {
                     description = "Erro de validação (ex: formato inválido ou dados faltando)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
             @ApiResponse(
@@ -118,7 +118,7 @@ public class ProductController {
                     description = "Recurso não encontrado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             )
     })
@@ -143,7 +143,7 @@ public class ProductController {
                     description = "Erro de validação (ex: formato inválido ou dados faltando)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
             @ApiResponse(
@@ -151,7 +151,7 @@ public class ProductController {
                     description = "Recurso não encontrado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
             @ApiResponse(
@@ -159,7 +159,7 @@ public class ProductController {
                     description = "Entidade não processável",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
     })
@@ -193,7 +193,7 @@ public class ProductController {
                     description = "Erro de validação (ex: formato inválido ou dados faltando)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
             @ApiResponse(
@@ -201,7 +201,7 @@ public class ProductController {
                     description = "Recurso não encontrado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             )
     })
@@ -225,7 +225,7 @@ public class ProductController {
                     description = "Erro de validação (ex: formato inválido ou dados faltando)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             ),
             @ApiResponse(
@@ -233,7 +233,7 @@ public class ProductController {
                     description = "Recurso não encontrado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class)
+                            schema = @Schema(implementation = ErrorResponse.class)
                     )
             )
     })

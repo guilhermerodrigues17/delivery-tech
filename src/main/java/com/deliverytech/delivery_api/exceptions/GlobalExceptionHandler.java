@@ -1,5 +1,7 @@
 package com.deliverytech.delivery_api.exceptions;
 
+import com.deliverytech.delivery_api.dto.response.errors.ErrorResponse;
+import com.deliverytech.delivery_api.model.enums.ErrorCode;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -11,124 +13,132 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.util.List;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    private ResponseEntity<ErrorMessage> handleResourceNotFoundException(
-            ResourceNotFoundException ex) {
-        var errorBody = new ErrorMessage();
-        errorBody.setMessage(ex.getMessage());
-        errorBody.setStatusCode(HttpStatus.NOT_FOUND.value());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorBody);
+    private ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        var errorResponse = ErrorResponse.of(
+                ErrorCode.RESOURCE_NOT_FOUND.getCode(),
+                ErrorCode.RESOURCE_NOT_FOUND.getDefaultMessage(),
+                ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    private ResponseEntity<List<ErrorMessage>> handleValidationException(
-            MethodArgumentNotValidException ex) {
-        var errors = ex.getBindingResult().getFieldErrors().stream().map(error -> {
-            var errorMessage = new ErrorMessage();
-            errorMessage.setMessage(error.getDefaultMessage());
-            errorMessage.setStatusCode(HttpStatus.BAD_REQUEST.value());
-            return errorMessage;
-        }).toList();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    private ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        String details = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> String.format("Campo '%s': %s", error.getField(), error.getDefaultMessage()))
+                .collect(Collectors.joining("; "));
+
+        var errorResponse = ErrorResponse.of(
+                ErrorCode.VALIDATION_ERROR.getCode(),
+                ErrorCode.VALIDATION_ERROR.getDefaultMessage(),
+                details);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    private ResponseEntity<ErrorMessage> handleHttpMessageNotReadableException(
-            HttpMessageNotReadableException ex) {
-        var errorBody = new ErrorMessage();
-        errorBody.setMessage(ex.getMessage());
-        errorBody.setStatusCode(HttpStatus.BAD_REQUEST.value());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody);
+    private ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        var errorResponse = ErrorResponse.of(
+                ErrorCode.BAD_REQUEST.getCode(),
+                ErrorCode.BAD_REQUEST.getDefaultMessage(),
+                ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    private ResponseEntity<ErrorMessage> handleMethodArgumentTypeMismatchException(
-            MethodArgumentTypeMismatchException ex) {
-        var errorBody = new ErrorMessage();
-        errorBody.setMessage(ex.getMessage());
-        errorBody.setStatusCode(HttpStatus.BAD_REQUEST.value());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody);
+    private ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        var errorResponse = ErrorResponse.of(
+                ErrorCode.BAD_REQUEST.getCode(),
+                ErrorCode.BAD_REQUEST.getDefaultMessage(),
+                ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    private ResponseEntity<ErrorMessage> handleMissingServletRequestParameterException(
-            MissingServletRequestParameterException ex) {
-        var errorBody = new ErrorMessage();
-        errorBody.setMessage(ex.getMessage());
-        errorBody.setStatusCode(HttpStatus.BAD_REQUEST.value());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody);
+    private ResponseEntity<ErrorResponse> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
+        var errorResponse = ErrorResponse.of(
+                ErrorCode.BAD_REQUEST.getCode(),
+                ErrorCode.BAD_REQUEST.getDefaultMessage(),
+                ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    private ResponseEntity<ErrorMessage> handleIllegalArgumentException(
-            IllegalArgumentException ex) {
-        var errorBody = new ErrorMessage();
-        errorBody.setMessage(ex.getMessage());
-        errorBody.setStatusCode(HttpStatus.BAD_REQUEST.value());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody);
+    private ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        var errorResponse = ErrorResponse.of(
+                ErrorCode.BAD_REQUEST.getCode(),
+                ErrorCode.BAD_REQUEST.getDefaultMessage(),
+                ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(DuplicatedRegisterException.class)
-    private ResponseEntity<ErrorMessage> handleDuplicatedRegisterException(
-            DuplicatedRegisterException ex) {
-        var errorBody = new ErrorMessage();
-        errorBody.setMessage(ex.getMessage());
-        errorBody.setStatusCode(HttpStatus.CONFLICT.value());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorBody);
+    private ResponseEntity<ErrorResponse> handleDuplicatedRegisterException(DuplicatedRegisterException ex) {
+        var errorResponse = ErrorResponse.of(
+                ErrorCode.CONFLICT_ERROR.getCode(),
+                ErrorCode.CONFLICT_ERROR.getDefaultMessage(),
+                ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
     @ExceptionHandler(NotAllowedException.class)
-    private ResponseEntity<ErrorMessage> handleNotAllowedException(NotAllowedException ex) {
-        var errorBody = new ErrorMessage();
-        errorBody.setMessage(ex.getMessage());
-        errorBody.setStatusCode(HttpStatus.FORBIDDEN.value());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorBody);
+    private ResponseEntity<ErrorResponse> handleNotAllowedException(NotAllowedException ex) {
+        var errorResponse = ErrorResponse.of(
+                ErrorCode.FORBIDDEN_ACCESS.getCode(),
+                ErrorCode.FORBIDDEN_ACCESS.getDefaultMessage(),
+                ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    private ResponseEntity<ErrorMessage> handleIllegalStateException(IllegalStateException ex) {
-        var errorBody = new ErrorMessage();
-        errorBody.setMessage(ex.getMessage());
-        errorBody.setStatusCode(HttpStatus.BAD_REQUEST.value());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody);
+    private ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException ex) {
+        var errorResponse = ErrorResponse.of(
+                ErrorCode.BAD_REQUEST.getCode(),
+                ErrorCode.BAD_REQUEST.getDefaultMessage(),
+                ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    private ResponseEntity<ErrorMessage> handleConstraintViolationException(ConstraintViolationException ex) {
-        var errorBody = new ErrorMessage();
-        errorBody.setMessage(ex.getConstraintViolations().stream()
+    private ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {
+        String details = ex.getConstraintViolations().stream()
                 .map(ConstraintViolation::getMessage)
-                .toList().getFirst());
-        errorBody.setStatusCode(HttpStatus.BAD_REQUEST.value());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody);
+                .collect(Collectors.joining("; "));
+
+        var errorResponse = ErrorResponse.of(
+                ErrorCode.VALIDATION_ERROR.getCode(),
+                ErrorCode.VALIDATION_ERROR.getDefaultMessage(),
+                details);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(CepZoneDistanceException.class)
-    private ResponseEntity<ErrorMessage> handleCepZoneDistanceException(CepZoneDistanceException ex) {
-        var errorBody = new ErrorMessage();
-        errorBody.setMessage(ex.getMessage());
-        errorBody.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY.value());
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorBody);
+    private ResponseEntity<ErrorResponse> handleCepZoneDistanceException(CepZoneDistanceException ex) {
+        var errorResponse = ErrorResponse.of(
+                ErrorCode.UNPROCESSABLE_ENTITY.getCode(),
+                ErrorCode.UNPROCESSABLE_ENTITY.getDefaultMessage(),
+                ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
     }
 
     @ExceptionHandler(BusinessException.class)
-    private ResponseEntity<ErrorMessage> handleBusinessException(BusinessException ex) {
-        var errorBody = new ErrorMessage();
-        errorBody.setMessage(ex.getMessage());
-        errorBody.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY.value());
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorBody);
+    private ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex) {
+        var errorResponse = ErrorResponse.of(
+                ErrorCode.UNPROCESSABLE_ENTITY.getCode(),
+                ErrorCode.UNPROCESSABLE_ENTITY.getDefaultMessage(),
+                ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)
-    private ResponseEntity<ErrorMessage> handleGenericException(Exception ex) {
-        var errorBody = new ErrorMessage();
-        errorBody.setMessage("Erro interno do servidor");
-        errorBody.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorBody);
+    private ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+        var errorResponse = ErrorResponse.of(
+                ErrorCode.INTERNAL_SERVER_ERROR.getCode(),
+                ErrorCode.INTERNAL_SERVER_ERROR.getDefaultMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 }
