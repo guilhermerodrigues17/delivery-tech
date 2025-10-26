@@ -13,8 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface OrderService {
-    Order createOrder(OrderRequestDto dto);
-    OrderResponseDto createOrderResponse(OrderRequestDto dto);
+    OrderResponseDto createOrder(OrderRequestDto dto);
     Order findById(String id);
     OrderResponseDto getOrderResponseById(String id);
     List<Order> findByConsumerId(String consumerId);

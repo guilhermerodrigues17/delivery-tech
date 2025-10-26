@@ -5,13 +5,13 @@ import com.deliverytech.delivery_api.dto.request.OrderStatusUpdateRequestDto;
 import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
 import com.deliverytech.delivery_api.dto.response.OrderSummaryResponseDto;
 import com.deliverytech.delivery_api.dto.response.OrderTotalResponseDto;
+import com.deliverytech.delivery_api.dto.response.wrappers.ApiResponseWrapper;
 import com.deliverytech.delivery_api.dto.response.wrappers.PagedResponseWrapper;
 import com.deliverytech.delivery_api.exceptions.ErrorMessage;
 import com.deliverytech.delivery_api.model.enums.OrderStatus;
 import com.deliverytech.delivery_api.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,7 +27,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @RequestMapping("/orders")
@@ -41,11 +40,7 @@ public class OrderController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
-                    description = "Pedido criado com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = OrderResponseDto.class)
-                    )
+                    description = "Pedido criado com sucesso"
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -73,7 +68,7 @@ public class OrderController {
             )
     })
     @PostMapping
-    public ResponseEntity<OrderResponseDto> createOrder(
+    public ResponseEntity<ApiResponseWrapper<OrderResponseDto>> createOrder(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Dados necessários para montar um pedido",
                     required = true,
@@ -84,7 +79,8 @@ public class OrderController {
             )
             @Valid @RequestBody OrderRequestDto dto
     ) {
-        var response = orderService.createOrderResponse(dto);
+        OrderResponseDto orderCreated = orderService.createOrder(dto);
+        var response = ApiResponseWrapper.of(orderCreated, "Pedido criado com sucesso");
         return ResponseEntity.created(null).body(response);
     }
 
@@ -92,11 +88,7 @@ public class OrderController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Calculo realizado com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = OrderTotalResponseDto.class)
-                    )
+                    description = "Calculo realizado com sucesso"
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -124,7 +116,7 @@ public class OrderController {
             )
     })
     @PostMapping("/calculate")
-    public ResponseEntity<OrderTotalResponseDto> calculateOrderTotal(
+    public ResponseEntity<ApiResponseWrapper<OrderTotalResponseDto>> calculateOrderTotal(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Dados necessários para calcular o valor total do pedido",
                     required = true,
@@ -135,7 +127,8 @@ public class OrderController {
             )
             @Valid @RequestBody OrderRequestDto dto
     ) {
-        var response = orderService.calculateOrderTotal(dto);
+        OrderTotalResponseDto calculatedOrderTotal = orderService.calculateOrderTotal(dto);
+        var response = ApiResponseWrapper.of(calculatedOrderTotal);
         return ResponseEntity.ok(response);
     }
 
@@ -143,11 +136,7 @@ public class OrderController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Pedidos listados com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = PagedResponseWrapper.class)
-                    )
+                    description = "Pedidos listados com sucesso"
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -180,11 +169,7 @@ public class OrderController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Pedidos encontrado com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = OrderResponseDto.class)
-                    )
+                    description = "Pedidos encontrado com sucesso"
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -204,11 +189,12 @@ public class OrderController {
             )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<OrderResponseDto> findOrderById(
+    public ResponseEntity<ApiResponseWrapper<OrderResponseDto>> findOrderById(
             @Parameter(description = "ID de busca do pedido", required = true)
             @PathVariable String id
     ) {
-        var response = orderService.getOrderResponseById(id);
+        OrderResponseDto orderFound = orderService.getOrderResponseById(id);
+        var response = ApiResponseWrapper.of(orderFound);
         return ResponseEntity.ok(response);
     }
 
@@ -216,11 +202,7 @@ public class OrderController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Status atualizado com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = OrderResponseDto.class)
-                    )
+                    description = "Status atualizado com sucesso"
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -248,7 +230,7 @@ public class OrderController {
             )
     })
     @PatchMapping("/{id}")
-    public ResponseEntity<OrderResponseDto> updateOrderStatus(
+    public ResponseEntity<ApiResponseWrapper<OrderResponseDto>> updateOrderStatus(
             @Parameter(description = "ID do pedido a ser atualizado", required = true)
             @PathVariable String id,
 
@@ -262,7 +244,8 @@ public class OrderController {
             )
             @RequestBody OrderStatusUpdateRequestDto dto
     ) {
-        var response = orderService.updateOrderStatus(id, dto.getStatus());
+        OrderResponseDto updatedOrder = orderService.updateOrderStatus(id, dto.getStatus());
+        var response = ApiResponseWrapper.of(updatedOrder, "O status do pedido foi atualizado");
         return ResponseEntity.ok(response);
     }
 

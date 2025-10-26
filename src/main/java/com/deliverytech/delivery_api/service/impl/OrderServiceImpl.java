@@ -41,7 +41,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
 
     @Transactional
-    public Order createOrder(OrderRequestDto dto) {
+    public OrderResponseDto createOrder(OrderRequestDto dto) {
         Consumer consumer = consumerService.findById(dto.getConsumerId());
         Restaurant restaurant = restaurantService.findById(dto.getRestaurantId());
 
@@ -80,13 +80,8 @@ public class OrderServiceImpl implements OrderService {
         order.setSubtotal(subtotal);
         order.setTotal(subtotal.add(order.getDeliveryTax()));
 
-        return orderRepository.save(order);
-    }
-
-    @Transactional
-    public OrderResponseDto createOrderResponse(OrderRequestDto dto) {
-        Order order = createOrder(dto);
-        return orderMapper.toDto(order);
+        var saved = orderRepository.save(order);
+        return orderMapper.toDto(saved);
     }
 
     public Order findById(String id) {

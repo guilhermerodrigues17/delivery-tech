@@ -1,18 +1,14 @@
 package com.deliverytech.delivery_api.controller;
 
-import com.deliverytech.delivery_api.dto.request.OrderRequestDto;
 import com.deliverytech.delivery_api.dto.request.ProductRequestDto;
-import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
 import com.deliverytech.delivery_api.dto.response.ProductResponseDto;
 import com.deliverytech.delivery_api.dto.response.wrappers.ApiResponseWrapper;
 import com.deliverytech.delivery_api.dto.response.wrappers.PagedResponseWrapper;
 import com.deliverytech.delivery_api.exceptions.ErrorMessage;
 import com.deliverytech.delivery_api.mapper.ProductMapper;
-import com.deliverytech.delivery_api.model.Product;
 import com.deliverytech.delivery_api.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -25,8 +21,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/products")
