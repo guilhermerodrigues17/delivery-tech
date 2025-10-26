@@ -30,13 +30,15 @@ public class ProductServiceImpl implements ProductService {
     private final RestaurantService restaurantService;
     private final ProductMapper productMapper;
 
-    public Product createProduct(ProductRequestDto dto) {
+    @Transactional
+    public ProductResponseDto createProduct(ProductRequestDto dto) {
         Restaurant restaurant = restaurantService.findById(dto.getRestaurantId());
 
         Product product = productMapper.toEntity(dto);
         product.setRestaurant(restaurant);
 
-        return productRepository.save(product);
+        var saved = productRepository.save(product);
+        return productMapper.toResponseDto(saved);
     }
 
     @Transactional(readOnly = true)

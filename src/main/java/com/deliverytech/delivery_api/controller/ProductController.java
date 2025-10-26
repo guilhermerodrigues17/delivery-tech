@@ -4,6 +4,7 @@ import com.deliverytech.delivery_api.dto.request.OrderRequestDto;
 import com.deliverytech.delivery_api.dto.request.ProductRequestDto;
 import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
 import com.deliverytech.delivery_api.dto.response.ProductResponseDto;
+import com.deliverytech.delivery_api.dto.response.wrappers.ApiResponseWrapper;
 import com.deliverytech.delivery_api.dto.response.wrappers.PagedResponseWrapper;
 import com.deliverytech.delivery_api.exceptions.ErrorMessage;
 import com.deliverytech.delivery_api.mapper.ProductMapper;
@@ -39,11 +40,7 @@ public class ProductController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
-                    description = "Produto criado com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ProductResponseDto.class)
-                    )
+                    description = "Produto criado com sucesso"
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -63,7 +60,7 @@ public class ProductController {
             )
     })
     @PostMapping
-    public ResponseEntity<ProductResponseDto> createProduct(
+    public ResponseEntity<ApiResponseWrapper<ProductResponseDto>> createProduct(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
@@ -73,9 +70,8 @@ public class ProductController {
             )
             @Valid @RequestBody ProductRequestDto dto
     ) {
-        Product product = productService.createProduct(dto);
-        var response = productMapper.toResponseDto(product);
-
+        ProductResponseDto productCreated = productService.createProduct(dto);
+        var response = ApiResponseWrapper.of(productCreated, "Produto criado com sucesso");
         return ResponseEntity.created(null).body(response);
     }
 
@@ -83,11 +79,7 @@ public class ProductController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Produtos listados com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = PagedResponseWrapper.class)
-                    )
+                    description = "Produtos listados com sucesso"
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -117,11 +109,7 @@ public class ProductController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Produto encontrado com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ProductResponseDto.class)
-                    )
+                    description = "Produto encontrado com sucesso"
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -141,11 +129,12 @@ public class ProductController {
             )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> findProductById(
+    public ResponseEntity<ApiResponseWrapper<ProductResponseDto>> findProductById(
             @Parameter(description = "ID do produto", required = true)
             @PathVariable String id
     ) {
-        var response = productService.findProductByIdResponse(id);
+        ProductResponseDto productFound = productService.findProductByIdResponse(id);
+        var response = ApiResponseWrapper.of(productFound);
         return ResponseEntity.ok(response);
     }
 
@@ -153,11 +142,7 @@ public class ProductController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Dados atualizados com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ProductResponseDto.class)
-                    )
+                    description = "Dados atualizados com sucesso"
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -185,7 +170,7 @@ public class ProductController {
             ),
     })
     @PutMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> updateProduct(
+    public ResponseEntity<ApiResponseWrapper<ProductResponseDto>> updateProduct(
             @Parameter(description = "ID do produto", required = true)
             @PathVariable String id,
 
@@ -198,7 +183,8 @@ public class ProductController {
             )
             @Valid @RequestBody ProductRequestDto dto
     ) {
-        var response = productService.updateProduct(id, dto);
+        ProductResponseDto updatedProduct = productService.updateProduct(id, dto);
+        var response = ApiResponseWrapper.of(updatedProduct, "Dados atualizados com sucesso");
         return ResponseEntity.ok(response);
     }
 

@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface ProductService {
-    Product createProduct(ProductRequestDto dto);
+    ProductResponseDto createProduct(ProductRequestDto dto);
     ProductResponseDto findProductByIdResponse(String id);
     Product findProductEntityById(String id);
     List<ProductResponseDto> findProductsByRestaurantIdResponse(String restaurantId);
