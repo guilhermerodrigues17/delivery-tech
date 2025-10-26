@@ -9,9 +9,10 @@ import org.springframework.data.domain.Pageable;
 import java.util.UUID;
 
 public interface ConsumerService {
-    Consumer create(Consumer consumer);
+    ConsumerResponseDto create(ConsumerRequestDto dto);
     Consumer findById(UUID id);
-    Consumer findByEmail(String email);
+    ConsumerResponseDto findByIdResponse(String id);
+    ConsumerResponseDto findByEmail(String email);
     Boolean existsByEmail(String email);
     Page<ConsumerResponseDto> findAllActive(Pageable pageable);
     ConsumerResponseDto updateConsumer(String id, ConsumerRequestDto dto);

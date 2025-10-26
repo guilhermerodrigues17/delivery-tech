@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -22,13 +23,16 @@ public class ConsumerServiceImpl implements ConsumerService {
     private final ConsumerRepository consumerRepository;
     private final ConsumerMapper mapper;
 
-    public Consumer create(Consumer consumer) {
-        if (existsByEmail(consumer.getEmail())) {
+    public ConsumerResponseDto create(ConsumerRequestDto dto) {
+        if (existsByEmail(dto.getEmail())) {
             throw new DuplicatedRegisterException("E-mail já está em uso");
         }
 
-        consumer.setActive(true);
-        return consumerRepository.save(consumer);
+        Consumer consumerEntity = mapper.toEntity(dto);
+        consumerEntity.setActive(true);
+
+        var savedConsumer = consumerRepository.save(consumerEntity);
+        return mapper.toDto(savedConsumer);
     }
 
     public Consumer findById(UUID id) {
@@ -36,9 +40,16 @@ public class ConsumerServiceImpl implements ConsumerService {
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado"));
     }
 
-    public Consumer findByEmail(String email) {
-        return consumerRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado"));
+    @Transactional(readOnly = true)
+    public ConsumerResponseDto findByIdResponse(String id) {
+        Consumer consumer = findById(UUID.fromString(id));
+        return mapper.toDto(consumer);
+    }
+
+    @Transactional(readOnly = true)
+    public ConsumerResponseDto findByEmail(String email) {
+        var consumer = consumerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado"));
+        return mapper.toDto(consumer);
     }
 
     public Boolean existsByEmail(String email) {

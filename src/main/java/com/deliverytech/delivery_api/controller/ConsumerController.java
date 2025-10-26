@@ -3,10 +3,10 @@ package com.deliverytech.delivery_api.controller;
 import com.deliverytech.delivery_api.dto.request.ConsumerRequestDto;
 import com.deliverytech.delivery_api.dto.response.ConsumerResponseDto;
 import com.deliverytech.delivery_api.dto.response.OrderSummaryResponseDto;
+import com.deliverytech.delivery_api.dto.response.wrappers.ApiResponseWrapper;
 import com.deliverytech.delivery_api.dto.response.wrappers.PagedResponseWrapper;
 import com.deliverytech.delivery_api.exceptions.ErrorMessage;
 import com.deliverytech.delivery_api.mapper.ConsumerMapper;
-import com.deliverytech.delivery_api.model.Consumer;
 import com.deliverytech.delivery_api.service.ConsumerService;
 import com.deliverytech.delivery_api.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,7 +26,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/consumers")
@@ -42,11 +41,7 @@ public class ConsumerController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
-                    description = "Cliente criado com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ConsumerResponseDto.class)
-                    )
+                    description = "Cliente criado com sucesso"
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -66,7 +61,7 @@ public class ConsumerController {
             )
     })
     @PostMapping
-    public ResponseEntity<ConsumerResponseDto> create(
+    public ResponseEntity<ApiResponseWrapper<ConsumerResponseDto>> create(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
@@ -76,9 +71,8 @@ public class ConsumerController {
             )
             @Valid @RequestBody ConsumerRequestDto dto
     ) {
-        Consumer consumer = mapper.toEntity(dto);
-        Consumer consumerCreated = consumerService.create(consumer);
-        var response = mapper.toDto(consumerCreated);
+        ConsumerResponseDto consumerCreated = consumerService.create(dto);
+        var response = ApiResponseWrapper.of(consumerCreated, "Cliente criado com sucesso");
         return ResponseEntity.created(null).body(response);
     }
 
@@ -86,11 +80,7 @@ public class ConsumerController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Cliente encontrado",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ConsumerResponseDto.class)
-                    )
+                    description = "Cliente encontrado"
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -102,13 +92,13 @@ public class ConsumerController {
             )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ConsumerResponseDto> findById(
+    public ResponseEntity<ApiResponseWrapper<ConsumerResponseDto>> findById(
             @Parameter(description = "UUID do cliente a ser buscado", required = true)
             @PathVariable String id
     ) {
-        UUID uuid = UUID.fromString(id);
-        Consumer consumer = consumerService.findById(uuid);
-        var response = mapper.toDto(consumer);
+
+        ConsumerResponseDto consumerFound = consumerService.findByIdResponse(id);
+        var response = ApiResponseWrapper.of(consumerFound);
         return ResponseEntity.ok(response);
     }
 
@@ -116,11 +106,7 @@ public class ConsumerController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Lista de clientes encontrados",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = PagedResponseWrapper.class)
-                    )
+                    description = "Lista de clientes encontrados"
             )
     })
     @GetMapping
@@ -137,11 +123,7 @@ public class ConsumerController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Cliente encontrado",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ConsumerResponseDto.class)
-                    )
+                    description = "Cliente encontrado"
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -153,11 +135,11 @@ public class ConsumerController {
             ),
     })
     @GetMapping("/{email}")
-    public ResponseEntity<ConsumerResponseDto> findConsumerByEmail(
+    public ResponseEntity<ApiResponseWrapper<ConsumerResponseDto>> findConsumerByEmail(
             @Parameter(description = "E-mail do cliente a ser buscado", required = true)
             @PathVariable String email) {
-        var consumer = consumerService.findByEmail(email);
-        var response = mapper.toDto(consumer);
+        ConsumerResponseDto consumerFound = consumerService.findByEmail(email);
+        var response = ApiResponseWrapper.of(consumerFound);
         return ResponseEntity.ok(response);
     }
 
@@ -196,9 +178,7 @@ public class ConsumerController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Dados atualizados",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ConsumerResponseDto.class))
+                    description = "Dados atualizados"
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -224,7 +204,7 @@ public class ConsumerController {
             )
     })
     @PutMapping("/{id}")
-    public ResponseEntity<ConsumerResponseDto> updateConsumer(
+    public ResponseEntity<ApiResponseWrapper<ConsumerResponseDto>> updateConsumer(
             @Parameter(description = "ID do cliente a ser atualizado", required = true)
             @PathVariable String id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -236,7 +216,8 @@ public class ConsumerController {
             )
             @Valid @RequestBody ConsumerRequestDto dto
     ) {
-        var response = consumerService.updateConsumer(id, dto);
+        ConsumerResponseDto updatedConsumer = consumerService.updateConsumer(id, dto);
+        var response = ApiResponseWrapper.of(updatedConsumer, "Dados atualizados com sucesso");
         return ResponseEntity.ok(response);
 
     }
