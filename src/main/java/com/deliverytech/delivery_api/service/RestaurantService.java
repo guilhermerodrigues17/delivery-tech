@@ -12,14 +12,13 @@ import java.util.List;
 import java.util.UUID;
 
 public interface RestaurantService {
-    Restaurant createRestaurant(Restaurant restaurant);
+    RestaurantResponseDto createRestaurant(RestaurantRequestDto dto);
     Restaurant findById(UUID id);
-    Restaurant findByName(String name);
+    RestaurantResponseDto findByIdResponse(String id);
     Boolean existsByName(String name);
     List<RestaurantResponseDto> findByCategory(String category);
     Page<RestaurantResponseDto> searchRestaurants(String name, String category, String active, Pageable pageable);
     Page<RestaurantResponseDto> findAllActive(Pageable pageable);
-    List<Restaurant> findAll();
     List<RestaurantResponseDto> findRestaurantsNearby(String cep);
     RestaurantResponseDto updateRestaurant(String id, RestaurantRequestDto dto);
     void updateStatusActive(String id, RestaurantStatusUpdateDto dto);

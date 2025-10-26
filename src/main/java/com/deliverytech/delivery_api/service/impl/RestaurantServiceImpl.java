@@ -30,14 +30,17 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantRepository restaurantRepository;
     private final RestaurantMapper mapper;
 
-    public Restaurant createRestaurant(Restaurant restaurant) {
-        if (existsByName(restaurant.getName())) {
+    public RestaurantResponseDto createRestaurant(RestaurantRequestDto dto) {
+        if (existsByName(dto.getName())) {
             throw new DuplicatedRegisterException("Nome de restaurante já está em uso");
 
         }
 
-        restaurant.setActive(true);
-        return restaurantRepository.save(restaurant);
+        Restaurant restaurantEntity = mapper.toEntity(dto);
+        restaurantEntity.setActive(true);
+
+        Restaurant saved = restaurantRepository.save(restaurantEntity);
+        return mapper.toDto(saved);
     }
 
     @Transactional(readOnly = true)
@@ -47,9 +50,9 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Transactional(readOnly = true)
-    public Restaurant findByName(String name) {
-        return restaurantRepository.findByName(name)
-                .orElseThrow(() -> new ResourceNotFoundException("Restaurante não encontrado"));
+    public RestaurantResponseDto findByIdResponse(String id) {
+        Restaurant restaurantFound = findById(UUID.fromString(id));
+        return mapper.toDto(restaurantFound);
     }
 
     public Boolean existsByName(String name) {
@@ -80,10 +83,6 @@ public class RestaurantServiceImpl implements RestaurantService {
     public Page<RestaurantResponseDto> findAllActive(Pageable pageable) {
         Page<Restaurant> restaurantsPage = restaurantRepository.findByActiveTrue(pageable);
         return restaurantsPage.map(mapper::toDto);
-    }
-
-    public List<Restaurant> findAll() {
-        return restaurantRepository.findAll();
     }
 
     public List<RestaurantResponseDto> findRestaurantsNearby(String cep) {
