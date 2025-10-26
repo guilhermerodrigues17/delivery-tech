@@ -59,12 +59,6 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurantRepository.existsByName(name);
     }
 
-    @Transactional(readOnly = true)
-    public List<RestaurantResponseDto> findByCategory(String category) {
-        var restaurants = restaurantRepository.findByCategory(category);
-        return restaurants.stream().map(mapper::toDto).toList();
-    }
-
     public Page<RestaurantResponseDto> searchRestaurants(String name, String category, String active, Pageable pageable) {
         var restaurant = new Restaurant();
         restaurant.setName(name);
