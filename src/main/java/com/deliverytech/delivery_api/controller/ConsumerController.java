@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.List;
 
@@ -73,7 +74,8 @@ public class ConsumerController {
     ) {
         ConsumerResponseDto consumerCreated = consumerService.create(dto);
         var response = ApiResponseWrapper.of(consumerCreated, "Cliente criado com sucesso");
-        return ResponseEntity.created(null).body(response);
+        var location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(consumerCreated.id()).toUri();
+        return ResponseEntity.created(location).body(response);
     }
 
     @Operation(summary = "Busca um cliente por ID", description = "Retorna os dados de um cliente específico baseado no seu UUID")

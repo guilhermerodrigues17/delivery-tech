@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDate;
 
@@ -81,7 +82,8 @@ public class OrderController {
     ) {
         OrderResponseDto orderCreated = orderService.createOrder(dto);
         var response = ApiResponseWrapper.of(orderCreated, "Pedido criado com sucesso");
-        return ResponseEntity.created(null).body(response);
+        var location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(orderCreated.id()).toUri();
+        return ResponseEntity.created(location).body(response);
     }
 
     @Operation(summary = "Calcular valor total", description = "Calcula o valor total do pedido sem persistir os dados")

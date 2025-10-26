@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/products")
@@ -66,7 +67,8 @@ public class ProductController {
     ) {
         ProductResponseDto productCreated = productService.createProduct(dto);
         var response = ApiResponseWrapper.of(productCreated, "Produto criado com sucesso");
-        return ResponseEntity.created(null).body(response);
+        var location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(productCreated.id()).toUri();
+        return ResponseEntity.created(location).body(response);
     }
 
     @Operation(summary = "Listar produtos", description = "Retorna uma lista de produtos, podendo ser filtrados por nome e categoria.")

@@ -29,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -82,7 +83,8 @@ public class RestaurantController {
     ) {
         RestaurantResponseDto createdRestaurant = restaurantService.createRestaurant(dto);
         var response = ApiResponseWrapper.of(createdRestaurant, "Restaurante cadastrado com sucesso");
-        return ResponseEntity.created(null).body(response);
+        var location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(createdRestaurant.id()).toUri();
+        return ResponseEntity.created(location).body(response);
     }
 
     @Operation(summary = "Buscar um restaurante por ID", description = "Retorna os dados de um restaurante baseado no UUID")
