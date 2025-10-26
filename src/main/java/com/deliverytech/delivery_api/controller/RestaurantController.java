@@ -14,7 +14,6 @@ import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -135,7 +134,7 @@ public class RestaurantController {
                     )
             ),
     })
-    @GetMapping("/search")
+    @GetMapping
     public ResponseEntity<PagedResponseWrapper<RestaurantResponseDto>> searchRestaurants(
             @Parameter(description = "Nome do restaurante", required = false)
             @RequestParam(required = false) String name,
@@ -153,61 +152,11 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurantsResponse);
     }
 
-    @Operation(summary = "Listar restaurantes ativos", description = "Retorna uma lista de restaurantes ativos")
-    @ApiResponse(
-            responseCode = "200",
-            description = "Restaurantes listados com sucesso"
-    )
-    @GetMapping
-    public ResponseEntity<PagedResponseWrapper<RestaurantResponseDto>> findAllActive(
-            @ParameterObject Pageable pageable
-    ) {
-        Page<RestaurantResponseDto> restaurantsPage = restaurantService.findAllActive(pageable);
-        var restaurantsResponse = PagedResponseWrapper.of(restaurantsPage);
-        return ResponseEntity.ok(restaurantsResponse);
-    }
-
-    @Operation(summary = "Listar restaurantes por categoria", description = "Retorna uma lista de restaurantes, filtrados por categoria")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Restaurantes listados com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            array = @ArraySchema(
-                                    schema = @Schema(implementation = RestaurantResponseDto.class)
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Erro de validação (ex: formato inválido ou dados faltando)",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponse.class)
-                    )
-            ),
-    })
-    @GetMapping(params = "category")
-    public ResponseEntity<List<RestaurantResponseDto>> findByCategory(
-            @Parameter(description = "Categoria dos restaurantes", required = true)
-            @RequestParam("category") String category
-    ) {
-        var response = restaurantService.findByCategory(category);
-        return ResponseEntity.ok(response);
-    }
-
     @Operation(summary = "Listar produtos de um restaurante", description = "Retorna uma lista de produtos relacionados àquele restaurante")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Produtos listados com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            array = @ArraySchema(
-                                    schema = @Schema(implementation = ProductResponseDto.class)
-                            )
-                    )
+                    description = "Produtos listados com sucesso"
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -235,11 +184,14 @@ public class RestaurantController {
             )
     })
     @GetMapping("/{restaurantId}/products")
-    public ResponseEntity<List<ProductResponseDto>> findProductsByRestaurantId(
+    public ResponseEntity<PagedResponseWrapper<ProductResponseDto>> findProductsByRestaurantId(
             @Parameter(description = "ID do restaurante", required = true)
-            @PathVariable String restaurantId
+            @PathVariable String restaurantId,
+
+            @ParameterObject Pageable pageable
     ) {
-        var response = productService.findProductsByRestaurantIdResponse(restaurantId);
+        Page<ProductResponseDto> productsPage = productService.findProductsByRestaurantId(restaurantId, pageable);
+        var response = PagedResponseWrapper.of(productsPage);
         return ResponseEntity.ok(response);
     }
 
@@ -247,13 +199,7 @@ public class RestaurantController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Pedidos listados com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            array = @ArraySchema(
-                                    schema = @Schema(implementation = OrderSummaryResponseDto.class)
-                            )
-                    )
+                    description = "Pedidos listados com sucesso"
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -273,12 +219,15 @@ public class RestaurantController {
             ),
     })
     @GetMapping("/{restaurantId}/orders")
-    public ResponseEntity<List<OrderSummaryResponseDto>> findOrdersByRestaurantId(
+    public ResponseEntity<PagedResponseWrapper<OrderSummaryResponseDto>> findOrdersByRestaurantId(
             @Parameter(description = "ID do restaurante", required = true)
-            @PathVariable String restaurantId
+            @PathVariable String restaurantId,
+
+            @ParameterObject Pageable pageable
     ) {
-        List<OrderSummaryResponseDto> orders = orderService.findByRestaurantId(restaurantId);
-        return ResponseEntity.ok(orders);
+        Page<OrderSummaryResponseDto> ordersPage = orderService.findByRestaurantId(restaurantId, pageable);
+        var response = PagedResponseWrapper.of(ordersPage);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Calcular a taxa de entrega de um restaurante",
@@ -336,13 +285,7 @@ public class RestaurantController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Restaurantes listados com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            array = @ArraySchema(
-                                    schema = @Schema(implementation = RestaurantResponseDto.class)
-                            )
-                    )
+                    description = "Restaurantes listados com sucesso"
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -354,14 +297,17 @@ public class RestaurantController {
             )
     })
     @GetMapping(value = "/nearby", params = "cep")
-    public ResponseEntity<List<RestaurantResponseDto>> findRestaurantsNearby(
+    public ResponseEntity<PagedResponseWrapper<RestaurantResponseDto>> findRestaurantsNearby(
             @Parameter(description = "CEP do cliente", required = true, example = "12345-678")
             @RequestParam
             @Pattern(regexp = "\\d{5}-?\\d{3}", message = "Formato de CEP inválido. Use XXXXX-XXX ou XXXXXXXX.")
-            String cep
+            String cep,
+
+            @ParameterObject Pageable pageable
     ) {
-        var restaurants = restaurantService.findRestaurantsNearby(cep);
-        return ResponseEntity.ok(restaurants);
+        var restaurantsPage = restaurantService.findRestaurantsNearby(cep, pageable);
+        var response = PagedResponseWrapper.of(restaurantsPage);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Atualizar dados de um restaurante", description = "Atualiza os dados de um restaurante com base no seu UUID")

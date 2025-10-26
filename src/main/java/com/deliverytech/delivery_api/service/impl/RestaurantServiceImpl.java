@@ -85,11 +85,10 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurantsPage.map(mapper::toDto);
     }
 
-    public List<RestaurantResponseDto> findRestaurantsNearby(String cep) {
+    public Page<RestaurantResponseDto> findRestaurantsNearby(String cep, Pageable pageable) {
         // TODO: add search by cep logic and integration
 
-        Page<RestaurantResponseDto> restaurants = findAllActive(Pageable.unpaged());
-        return restaurants.getContent();
+        return findAllActive(pageable);
     }
 
     public RestaurantResponseDto updateRestaurant(String id, RestaurantRequestDto dto) {

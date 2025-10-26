@@ -18,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -54,11 +53,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResponseDto> findProductsByRestaurantIdResponse(String restaurantId) {
+    public Page<ProductResponseDto> findProductsByRestaurantId(String restaurantId, Pageable pageable) {
         var restaurant = restaurantService.findById(UUID.fromString(restaurantId));
 
-        var products = productRepository.findByRestaurantId(restaurant.getId());
-        return products.stream().map(productMapper::toResponseDto).toList();
+        var productsPage = productRepository.findByRestaurantId(restaurant.getId(), pageable);
+        return productsPage.map(productMapper::toResponseDto);
     }
 
     @Override

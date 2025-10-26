@@ -107,10 +107,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderSummaryResponseDto> findByRestaurantId(String restaurantId) {
+    public Page<OrderSummaryResponseDto> findByRestaurantId(String restaurantId, Pageable pageable) {
         var restaurant = restaurantService.findById(UUID.fromString(restaurantId));
-        List<Order> orders = orderRepository.findByRestaurantId(restaurant.getId());
-        return orderMapper.toSummaryDtoList(orders);
+        Page<Order> ordersPage = orderRepository.findByRestaurantId(restaurant.getId(), pageable);
+        return ordersPage.map(orderMapper::toSummaryDto);
     }
 
     @Transactional(readOnly = true)

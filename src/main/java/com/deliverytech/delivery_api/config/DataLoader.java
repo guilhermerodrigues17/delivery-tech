@@ -302,7 +302,7 @@ public class DataLoader implements CommandLineRunner {
         System.out.println("\n---|Testando ProductRepository|---");
 
         var productsByRestaurant =
-                productRepository.findByRestaurantId(restaurantByName.get().getId());
+                productRepository.findByRestaurantId(restaurantByName.get().getId(), Pageable.unpaged());
         var productsAvailableByRestaurant = productRepository
                 .findByRestaurantIdAndAvailableTrue(restaurantByName.get().getId());
 

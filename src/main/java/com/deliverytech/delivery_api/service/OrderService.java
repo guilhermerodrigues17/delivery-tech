@@ -18,7 +18,7 @@ public interface OrderService {
     OrderResponseDto getOrderResponseById(String id);
     List<Order> findByConsumerId(String consumerId);
     List<OrderSummaryResponseDto> findByConsumerIdResponse(String consumerId);
-    List<OrderSummaryResponseDto> findByRestaurantId(String restaurantId);
+    Page<OrderSummaryResponseDto> findByRestaurantId(String restaurantId, Pageable pageable);
     Page<OrderSummaryResponseDto> searchOrders(OrderStatus status, LocalDate startDate, LocalDate endDate, Pageable pageable);
     OrderResponseDto updateOrderStatus(String id, OrderStatus newStatus);
     OrderTotalResponseDto calculateOrderTotal(OrderRequestDto dto);

@@ -5,6 +5,8 @@ import com.deliverytech.delivery_api.model.enums.OrderStatus;
 import com.deliverytech.delivery_api.repository.projection.ActiveConsumerProjection;
 import com.deliverytech.delivery_api.repository.projection.OrderByPeriodProjection;
 import com.deliverytech.delivery_api.repository.projection.SalesByRestaurantProjection;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -18,7 +20,7 @@ import java.util.UUID;
 public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecificationExecutor<Order> {
     List<Order> findByConsumerId(UUID consumerId);
 
-    List<Order> findByRestaurantId(UUID restaurantId);
+    Page<Order> findByRestaurantId(UUID restaurantId, Pageable pageable);
 
     List<Order> findByStatus(OrderStatus status);
 

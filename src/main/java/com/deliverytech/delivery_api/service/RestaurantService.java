@@ -19,7 +19,7 @@ public interface RestaurantService {
     List<RestaurantResponseDto> findByCategory(String category);
     Page<RestaurantResponseDto> searchRestaurants(String name, String category, String active, Pageable pageable);
     Page<RestaurantResponseDto> findAllActive(Pageable pageable);
-    List<RestaurantResponseDto> findRestaurantsNearby(String cep);
+    Page<RestaurantResponseDto> findRestaurantsNearby(String cep, Pageable pageable);
     RestaurantResponseDto updateRestaurant(String id, RestaurantRequestDto dto);
     void updateStatusActive(String id, RestaurantStatusUpdateDto dto);
     BigDecimal calculateDeliveryTax(String restaurantId, String cep);
