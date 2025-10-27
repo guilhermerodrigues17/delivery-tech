@@ -16,7 +16,7 @@ public interface RestaurantService {
     Restaurant findById(UUID id);
     RestaurantResponseDto findByIdResponse(String id);
     Boolean existsByName(String name);
-    Page<RestaurantResponseDto> searchRestaurants(String name, String category, String active, Pageable pageable);
+    Page<RestaurantResponseDto> searchRestaurants(String name, String category, Boolean active, Pageable pageable);
     Page<RestaurantResponseDto> findAllActive(Pageable pageable);
     Page<RestaurantResponseDto> findRestaurantsNearby(String cep, Pageable pageable);
     RestaurantResponseDto updateRestaurant(String id, RestaurantRequestDto dto);

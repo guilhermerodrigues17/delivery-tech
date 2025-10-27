@@ -33,11 +33,16 @@ public class RestaurantServiceImpl implements RestaurantService {
     public RestaurantResponseDto createRestaurant(RestaurantRequestDto dto) {
         if (existsByName(dto.getName())) {
             throw new DuplicatedRegisterException("Nome de restaurante já está em uso");
-
         }
 
         Restaurant restaurantEntity = mapper.toEntity(dto);
         restaurantEntity.setActive(true);
+
+        String rawPhone = dto.getPhoneNumber();
+        if (rawPhone != null) {
+            var trimmedPhone = rawPhone.replaceAll("\\D", "");
+            restaurantEntity.setPhoneNumber(trimmedPhone);
+        }
 
         Restaurant saved = restaurantRepository.save(restaurantEntity);
         return mapper.toDto(saved);
@@ -59,11 +64,11 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurantRepository.existsByName(name);
     }
 
-    public Page<RestaurantResponseDto> searchRestaurants(String name, String category, String active, Pageable pageable) {
+    public Page<RestaurantResponseDto> searchRestaurants(String name, String category, Boolean active, Pageable pageable) {
         var restaurant = new Restaurant();
         restaurant.setName(name);
         restaurant.setCategory(category);
-        restaurant.setActive(Boolean.parseBoolean(active));
+        restaurant.setActive(active);
 
         ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues().withIgnoreCase()
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
@@ -97,11 +102,15 @@ public class RestaurantServiceImpl implements RestaurantService {
 
         existingRestaurant.setCategory(dto.getCategory());
         existingRestaurant.setAddress(dto.getAddress());
-        existingRestaurant.setPhoneNumber(dto.getPhoneNumber());
         existingRestaurant.setDeliveryTax(dto.getDeliveryTax());
 
-        var updatedRestaurant = restaurantRepository.save(existingRestaurant);
+        String rawPhone = dto.getPhoneNumber();
+        if (rawPhone != null) {
+            var trimmedPhone = rawPhone.replaceAll("\\D", "");
+            existingRestaurant.setPhoneNumber(trimmedPhone);
+        }
 
+        var updatedRestaurant = restaurantRepository.save(existingRestaurant);
         return mapper.toDto(updatedRestaurant);
     }
 

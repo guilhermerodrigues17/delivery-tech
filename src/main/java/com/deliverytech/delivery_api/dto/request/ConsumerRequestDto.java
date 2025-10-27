@@ -1,5 +1,6 @@
 package com.deliverytech.delivery_api.dto.request;
 
+import com.deliverytech.delivery_api.validation.annotations.ValidPhoneNumber;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -21,7 +22,7 @@ public class ConsumerRequestDto {
 
     @Schema(description = "Telefone", example = "11911223344")
     @NotBlank(message = "Telefone não pode estar em branco")
-    @Size(min = 8, max = 15, message = "Telefone deve ter entre 8 e 15 caracteres")
+    @ValidPhoneNumber
     private String phoneNumber;
 
     @Schema(description = "Endereço", example = "Rua A, 1000")

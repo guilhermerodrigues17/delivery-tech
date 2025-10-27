@@ -31,6 +31,12 @@ public class ConsumerServiceImpl implements ConsumerService {
         Consumer consumerEntity = mapper.toEntity(dto);
         consumerEntity.setActive(true);
 
+        String rawPhone = dto.getPhoneNumber();
+        if (rawPhone != null) {
+            var trimmedPhone = rawPhone.replaceAll("\\D", "");
+            consumerEntity.setPhoneNumber(trimmedPhone);
+        }
+
         var savedConsumer = consumerRepository.save(consumerEntity);
         return mapper.toDto(savedConsumer);
     }
@@ -74,11 +80,15 @@ public class ConsumerServiceImpl implements ConsumerService {
         }
 
         existingConsumer.setName(dto.getName());
-        existingConsumer.setPhoneNumber(dto.getPhoneNumber());
         existingConsumer.setAddress(dto.getAddress());
 
-        var updatedConsumer = consumerRepository.save(existingConsumer);
+        String rawPhone = dto.getPhoneNumber();
+        if (rawPhone != null) {
+            var trimmedPhone = rawPhone.replaceAll("\\D", "");
+            existingConsumer.setPhoneNumber(trimmedPhone);
+        }
 
+        var updatedConsumer = consumerRepository.save(existingConsumer);
         return mapper.toDto(updatedConsumer);
     }
 

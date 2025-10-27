@@ -12,6 +12,8 @@ import com.deliverytech.delivery_api.mapper.RestaurantMapper;
 import com.deliverytech.delivery_api.service.OrderService;
 import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
+import com.deliverytech.delivery_api.validation.annotations.ValidCEP;
+import com.deliverytech.delivery_api.validation.annotations.ValidCategory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,7 +22,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -32,7 +33,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -140,10 +140,10 @@ public class RestaurantController {
             @RequestParam(required = false) String name,
 
             @Parameter(description = "Categoria do restaurante", required = false)
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) @ValidCategory String category,
 
             @Parameter(description = "Restaurante está ativo?", required = false)
-            @RequestParam(required = false, defaultValue = "true") String active,
+            @RequestParam(required = false, defaultValue = "true") Boolean active,
 
             @ParameterObject Pageable pageable
     ) {
@@ -269,8 +269,7 @@ public class RestaurantController {
 
             @Parameter(description = "CEP do cliente", required = true, example = "12345-678")
             @RequestParam(required = true)
-            @Pattern(regexp = "\\d{5}-?\\d{3}", message = "Formato de CEP inválido. Use XXXXX-XXX ou XXXXXXXX.")
-            String cep
+            @ValidCEP String cep
     ) {
         BigDecimal deliveryTax = restaurantService.calculateDeliveryTax(id, cep);
 
@@ -300,8 +299,7 @@ public class RestaurantController {
     public ResponseEntity<PagedResponseWrapper<RestaurantResponseDto>> findRestaurantsNearby(
             @Parameter(description = "CEP do cliente", required = true, example = "12345-678")
             @RequestParam
-            @Pattern(regexp = "\\d{5}-?\\d{3}", message = "Formato de CEP inválido. Use XXXXX-XXX ou XXXXXXXX.")
-            String cep,
+            @ValidCEP String cep,
 
             @ParameterObject Pageable pageable
     ) {

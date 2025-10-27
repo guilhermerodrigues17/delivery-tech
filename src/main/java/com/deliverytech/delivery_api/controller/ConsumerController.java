@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -139,7 +140,7 @@ public class ConsumerController {
     @GetMapping("/email/{email}")
     public ResponseEntity<ApiResponseWrapper<ConsumerResponseDto>> findConsumerByEmail(
             @Parameter(description = "E-mail do cliente a ser buscado", required = true)
-            @PathVariable String email) {
+            @PathVariable @Email(message = "O e-mail deve ser válido") String email) {
         ConsumerResponseDto consumerFound = consumerService.findByEmail(email);
         var response = ApiResponseWrapper.of(consumerFound);
         return ResponseEntity.ok(response);
