@@ -2,7 +2,7 @@ package com.deliverytech.delivery_api.service.impl;
 
 import com.deliverytech.delivery_api.dto.request.ConsumerRequestDto;
 import com.deliverytech.delivery_api.dto.response.ConsumerResponseDto;
-import com.deliverytech.delivery_api.exceptions.DuplicatedRegisterException;
+import com.deliverytech.delivery_api.exceptions.ConflictException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.mapper.ConsumerMapper;
 import com.deliverytech.delivery_api.model.Consumer;
@@ -25,7 +25,7 @@ public class ConsumerServiceImpl implements ConsumerService {
 
     public ConsumerResponseDto create(ConsumerRequestDto dto) {
         if (existsByEmail(dto.getEmail())) {
-            throw new DuplicatedRegisterException("E-mail já está em uso");
+            throw new ConflictException("E-mail já está em uso");
         }
 
         Consumer consumerEntity = mapper.toEntity(dto);
@@ -73,7 +73,7 @@ public class ConsumerServiceImpl implements ConsumerService {
         if (!existingConsumer.getEmail().equals(dto.getEmail())) {
 
             if (existsByEmail(dto.getEmail())) {
-                throw new DuplicatedRegisterException("E-mail já está em uso");
+                throw new ConflictException("E-mail já está em uso");
             }
 
             existingConsumer.setEmail(dto.getEmail());

@@ -3,8 +3,8 @@ package com.deliverytech.delivery_api.service.impl;
 import com.deliverytech.delivery_api.dto.request.RestaurantRequestDto;
 import com.deliverytech.delivery_api.dto.request.RestaurantStatusUpdateDto;
 import com.deliverytech.delivery_api.dto.response.RestaurantResponseDto;
-import com.deliverytech.delivery_api.exceptions.CepZoneDistanceException;
-import com.deliverytech.delivery_api.exceptions.DuplicatedRegisterException;
+import com.deliverytech.delivery_api.exceptions.BusinessException;
+import com.deliverytech.delivery_api.exceptions.ConflictException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.mapper.RestaurantMapper;
 import com.deliverytech.delivery_api.model.Restaurant;
@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -32,7 +31,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     public RestaurantResponseDto createRestaurant(RestaurantRequestDto dto) {
         if (existsByName(dto.getName())) {
-            throw new DuplicatedRegisterException("Nome de restaurante já está em uso");
+            throw new ConflictException("Nome de restaurante já está em uso");
         }
 
         Restaurant restaurantEntity = mapper.toEntity(dto);
@@ -95,7 +94,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
         if (!existingRestaurant.getName().equals(dto.getName())) {
             if (existsByName(dto.getName())) {
-                throw new DuplicatedRegisterException("Nome de restaurante já está em uso");
+                throw new ConflictException("Nome de restaurante já está em uso");
             }
             existingRestaurant.setName(dto.getName());
         }
@@ -127,7 +126,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
         String numericCep = cep.replaceAll("\\D", "");
         CepZonesDistance cepZoneDistance = CepZonesDistance.getCepZoneDistance(numericCep)
-                .orElseThrow(() -> new CepZoneDistanceException(
+                .orElseThrow(() -> new BusinessException(
                         "Desculpe, este restaurante não realiza entregas para o CEP informado."));
 
         return switch (cepZoneDistance) {

@@ -76,8 +76,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
-    @ExceptionHandler(DuplicatedRegisterException.class)
-    private ResponseEntity<ErrorResponse> handleDuplicatedRegisterException(DuplicatedRegisterException ex) {
+    @ExceptionHandler(ConflictException.class)
+    private ResponseEntity<ErrorResponse> handleConflictException(ConflictException ex) {
         var errorResponse = ErrorResponse.of(
                 ErrorCode.CONFLICT_ERROR.getCode(),
                 ErrorCode.CONFLICT_ERROR.getDefaultMessage(),
@@ -114,15 +114,6 @@ public class GlobalExceptionHandler {
                 ErrorCode.VALIDATION_ERROR.getDefaultMessage(),
                 details);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
-
-    @ExceptionHandler(CepZoneDistanceException.class)
-    private ResponseEntity<ErrorResponse> handleCepZoneDistanceException(CepZoneDistanceException ex) {
-        var errorResponse = ErrorResponse.of(
-                ErrorCode.UNPROCESSABLE_ENTITY.getCode(),
-                ErrorCode.UNPROCESSABLE_ENTITY.getDefaultMessage(),
-                ex.getMessage());
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
     }
 
     @ExceptionHandler(BusinessException.class)
