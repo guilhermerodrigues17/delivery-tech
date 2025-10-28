@@ -44,4 +44,7 @@ public class Restaurant {
 
     @OneToMany(mappedBy = "restaurant")
     private List<Order> orders;
+
+    @OneToOne(mappedBy = "restaurant")
+    private User user;
 }
