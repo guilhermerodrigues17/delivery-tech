@@ -24,11 +24,6 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final RestaurantService restaurantService;
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException(username));
-    }
-
     public User createUser(RegisterUserRequestDto dto) {
         if (userRepository.existsByEmail(dto.getEmail())) throw new ConflictException("E-mail já utilizado");
 
