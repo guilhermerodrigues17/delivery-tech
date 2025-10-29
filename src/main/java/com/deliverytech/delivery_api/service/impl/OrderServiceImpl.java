@@ -174,23 +174,19 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
     }
 
-    public boolean isOrderOwnerByEmail(String orderId) {
-        Optional<String> currentUserEmail = securityService.getCurrentUser().map(User::getEmail);
-        if (currentUserEmail.isEmpty()) return false;
+    public boolean isOwnerConsumer(String orderId) {
+        Optional<String> userEmail = securityService.getCurrentUser().map(User::getEmail);
+        if (userEmail.isEmpty()) return false;
 
         Order order = findById(orderId);
-        if (order.getConsumer() == null) return false;
-
-        return order.getConsumer().getEmail().equalsIgnoreCase(currentUserEmail.get());
+        return order.getConsumer().getEmail().equalsIgnoreCase(userEmail.get());
     }
 
-    public boolean isOrderOwnerRestaurant(String orderId) {
+    public boolean isOwnerRestaurant(String orderId) {
         Optional<UUID> currentUserRestaurantId = securityService.getCurrentUserRestaurantId();
         if (currentUserRestaurantId.isEmpty()) return false;
 
         Order order = findById(orderId);
-        if (order.getRestaurant() == null) return false;
-
         return order.getRestaurant().getId().equals(currentUserRestaurantId.get());
     }
 

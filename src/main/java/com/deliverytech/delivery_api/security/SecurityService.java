@@ -1,5 +1,6 @@
 package com.deliverytech.delivery_api.security;
 
+import com.deliverytech.delivery_api.model.Restaurant;
 import com.deliverytech.delivery_api.model.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +26,9 @@ public class SecurityService {
     }
 
     public Optional<UUID> getCurrentUserRestaurantId() {
-        return getCurrentUser().map(u -> u.getRestaurant().getId());
+        Optional<Restaurant> currentUserRestaurant = getCurrentUser().map(User::getRestaurant);
+        if (currentUserRestaurant.isEmpty()) return Optional.empty();
+
+        return Optional.of(currentUserRestaurant.get().getId());
     }
 }
