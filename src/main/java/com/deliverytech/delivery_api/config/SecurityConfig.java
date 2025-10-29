@@ -34,6 +34,17 @@ public class SecurityConfig {
     @Autowired
     private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
+    private static final String[] PUBLIC_ENDPOINTS = {
+            "/health",
+            "/info",
+            "/v3/api-docs/**",
+            "/scalar/**",
+            "/scalar-ui.html",
+            "/webjars/scalar/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -42,9 +53,10 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/restaurants").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/products/search").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/restaurants/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
+                    .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                     .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(e -> e
