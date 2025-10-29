@@ -156,13 +156,7 @@ public class ConsumerController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Lista de pedidos encontrados",
-                    content = @Content(
-                            mediaType = "application/json",
-                            array = @ArraySchema(
-                                    schema = @Schema(implementation = OrderSummaryResponseDto.class)
-                            )
-                    )
+                    description = "Lista de pedidos encontrados"
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -175,12 +169,15 @@ public class ConsumerController {
     })
     @GetMapping("/{consumerId}/orders")
     @PreAuthorize("hasRole('ADMIN') or @consumerServiceImpl.isOwnerByEmail(#consumerId)")
-    public ResponseEntity<List<OrderSummaryResponseDto>> findOrdersByConsumerId(
+    public ResponseEntity<PagedResponseWrapper<OrderSummaryResponseDto>> findOrdersByConsumerId(
             @Parameter(description = "ID do cliente", required = true)
-            @PathVariable String consumerId
+            @PathVariable String consumerId,
+
+            @ParameterObject Pageable pageable
     ) {
-        var ordersResponse = orderService.findByConsumerIdResponse(consumerId);
-        return ResponseEntity.ok(ordersResponse);
+        var orders = orderService.findByConsumerId(consumerId, pageable);
+        var response = PagedResponseWrapper.of(orders);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Atualiza dados de um cliente por ID", description = "Retorna os dados atualizados do cliente")

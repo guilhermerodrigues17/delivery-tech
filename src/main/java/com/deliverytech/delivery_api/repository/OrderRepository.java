@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecificationExecutor<Order> {
-    List<Order> findByConsumerId(UUID consumerId);
+    Page<Order> findByConsumerId(UUID consumerId, Pageable pageable);
 
     Page<Order> findByRestaurantId(UUID restaurantId, Pageable pageable);
 

@@ -338,8 +338,8 @@ public class DataLoader implements CommandLineRunner {
         // Testes de order
         System.out.println("\n---|Testando OrderRepository|---");
 
-        var ordersByConsumer = orderRepository.findByConsumerId(consumerByEmail.get().getId());
-        System.out.println("\nPedidos feitos pelo cliente 'Mateus': " + ordersByConsumer.size());
+        var ordersByConsumer = orderRepository.findByConsumerId(consumerByEmail.get().getId(), Pageable.unpaged());
+        System.out.println("\nPedidos feitos pelo cliente 'Mateus': " + ordersByConsumer.getTotalElements());
 
         var ordersByStatus = orderRepository.findByStatus(OrderStatus.PENDING);
         System.out.println("\nPedidos com status 'PENDING': " + ordersByStatus.size());

@@ -98,15 +98,10 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toDto(order);
     }
 
-    public List<Order> findByConsumerId(String consumerId) {
+    public Page<OrderSummaryResponseDto> findByConsumerId(String consumerId, Pageable pageable) {
         Consumer consumer = consumerService.findById(UUID.fromString(consumerId));
-        return orderRepository.findByConsumerId(consumer.getId());
-    }
-
-    @Transactional(readOnly = true)
-    public List<OrderSummaryResponseDto> findByConsumerIdResponse(String consumerId) {
-        List<Order> orders = findByConsumerId(consumerId);
-        return orderMapper.toSummaryDtoList(orders);
+        Page<Order> orderPages = orderRepository.findByConsumerId(consumer.getId(), pageable);
+        return orderPages.map(orderMapper::toSummaryDto);
     }
 
     @Override
