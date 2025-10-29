@@ -24,6 +24,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -63,6 +64,7 @@ public class ConsumerController {
             )
     })
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponseWrapper<ConsumerResponseDto>> create(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
@@ -95,6 +97,7 @@ public class ConsumerController {
             )
     })
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @consumerServiceImpl.isOwnerByEmail(#id)")
     public ResponseEntity<ApiResponseWrapper<ConsumerResponseDto>> findById(
             @Parameter(description = "UUID do cliente a ser buscado", required = true)
             @PathVariable String id
@@ -113,6 +116,7 @@ public class ConsumerController {
             )
     })
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PagedResponseWrapper<ConsumerResponseDto>> findAllActive(
             @ParameterObject Pageable pageable
     ) {
@@ -138,6 +142,7 @@ public class ConsumerController {
             ),
     })
     @GetMapping("/email/{email}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponseWrapper<ConsumerResponseDto>> findConsumerByEmail(
             @Parameter(description = "E-mail do cliente a ser buscado", required = true)
             @PathVariable @Email(message = "O e-mail deve ser válido") String email) {
@@ -169,6 +174,7 @@ public class ConsumerController {
             )
     })
     @GetMapping("/{consumerId}/orders")
+    @PreAuthorize("hasRole('ADMIN') or @consumerServiceImpl.isOwnerByEmail(#consumerId)")
     public ResponseEntity<List<OrderSummaryResponseDto>> findOrdersByConsumerId(
             @Parameter(description = "ID do cliente", required = true)
             @PathVariable String consumerId
@@ -207,6 +213,7 @@ public class ConsumerController {
             )
     })
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @consumerServiceImpl.isOwnerByEmail(#id)")
     public ResponseEntity<ApiResponseWrapper<ConsumerResponseDto>> updateConsumer(
             @Parameter(description = "ID do cliente a ser atualizado", required = true)
             @PathVariable String id,
@@ -239,6 +246,7 @@ public class ConsumerController {
             ),
     })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @consumerServiceImpl.isOwnerByEmail(#id)")
     public ResponseEntity<Void> softDeleteConsumer(
             @Parameter(description = "ID do ciente a ser desativado", required = true)
             @PathVariable String id

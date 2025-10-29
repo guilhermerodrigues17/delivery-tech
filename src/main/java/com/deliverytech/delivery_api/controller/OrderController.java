@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -69,6 +70,7 @@ public class OrderController {
             )
     })
     @PostMapping
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<ApiResponseWrapper<OrderResponseDto>> createOrder(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Dados necessários para montar um pedido",
@@ -118,6 +120,7 @@ public class OrderController {
             )
     })
     @PostMapping("/calculate")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<ApiResponseWrapper<OrderTotalResponseDto>> calculateOrderTotal(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Dados necessários para calcular o valor total do pedido",
@@ -150,6 +153,7 @@ public class OrderController {
             )
     })
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PagedResponseWrapper<OrderSummaryResponseDto>> searchOrders(
             @Parameter(description = "Filtrar pedidos pelo status", example = "DELIVERED", required = false)
             @RequestParam(required = false) OrderStatus status,
@@ -191,6 +195,9 @@ public class OrderController {
             )
     })
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') " +
+            "or (hasRole('CUSTOMER') and @orderServiceImpl.isOwnerConsumer(#id)) " +
+            "or (hasRole('RESTAURANT') and @orderServiceImpl.isOwnerRestaurant(#id))")
     public ResponseEntity<ApiResponseWrapper<OrderResponseDto>> findOrderById(
             @Parameter(description = "ID de busca do pedido", required = true)
             @PathVariable String id
@@ -232,6 +239,7 @@ public class OrderController {
             )
     })
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANT') and @orderServiceImpl.isOwnerRestaurant(#id))")
     public ResponseEntity<ApiResponseWrapper<OrderResponseDto>> updateOrderStatus(
             @Parameter(description = "ID do pedido a ser atualizado", required = true)
             @PathVariable String id,
@@ -265,6 +273,7 @@ public class OrderController {
             ),
     })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CUSTOMER') and @orderServiceImpl.isOwnerConsumer(#orderId))")
     public ResponseEntity<Void> cancelOrder(
             @Parameter(description = "ID do pedido a ser cancelado", required = true)
             @PathVariable("id") String orderId

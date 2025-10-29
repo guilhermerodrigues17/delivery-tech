@@ -20,6 +20,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -55,6 +56,7 @@ public class ProductController {
             )
     })
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANT') and @restaurantServiceImpl.isOwner(#dto.restaurantId))")
     public ResponseEntity<ApiResponseWrapper<ProductResponseDto>> createProduct(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
@@ -166,6 +168,7 @@ public class ProductController {
             ),
     })
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANT') and @productServiceImpl.isOwnerOfProductRestaurant(#id))")
     public ResponseEntity<ApiResponseWrapper<ProductResponseDto>> updateProduct(
             @Parameter(description = "ID do produto", required = true)
             @PathVariable String id,
@@ -208,6 +211,7 @@ public class ProductController {
             )
     })
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANT') and @productServiceImpl.isOwnerOfProductRestaurant(#id))")
     public ResponseEntity<Void> toggleAvailability(
             @Parameter(description = "ID do produto", required = true)
             @PathVariable String id
@@ -240,6 +244,7 @@ public class ProductController {
             )
     })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANT') and @productServiceImpl.isOwnerOfProductRestaurant(#id))")
     public ResponseEntity<Void> deleteProduct(
             @Parameter(description = "ID do produto", required = true)
             @PathVariable String id

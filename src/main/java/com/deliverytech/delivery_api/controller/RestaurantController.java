@@ -27,6 +27,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -70,6 +71,7 @@ public class RestaurantController {
             )
     })
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponseWrapper<RestaurantResponseDto>> createRestaurant(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
@@ -219,6 +221,7 @@ public class RestaurantController {
             ),
     })
     @GetMapping("/{restaurantId}/orders")
+    @PreAuthorize("hasRole('ADMIN') or @restaurantServiceImpl.isOwner(#restaurantId)")
     public ResponseEntity<PagedResponseWrapper<OrderSummaryResponseDto>> findOrdersByRestaurantId(
             @Parameter(description = "ID do restaurante", required = true)
             @PathVariable String restaurantId,
@@ -340,6 +343,7 @@ public class RestaurantController {
             ),
     })
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @restaurantServiceImpl.isOwner(#id)")
     public ResponseEntity<ApiResponseWrapper<RestaurantResponseDto>> updateRestaurant(
             @Parameter(description = "ID do restaurante a ser atualizado", required = true)
             @PathVariable String id,
@@ -382,6 +386,7 @@ public class RestaurantController {
             ),
     })
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN') or @restaurantServiceImpl.isOwner(#id)")
     public ResponseEntity<Void> updateStatusActive(
             @Parameter(description = "ID do restaurante a ser atualizado", required = true)
             @PathVariable String id,

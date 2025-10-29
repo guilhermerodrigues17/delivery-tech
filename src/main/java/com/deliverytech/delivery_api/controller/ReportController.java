@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,6 +46,7 @@ public class ReportController {
             )
     })
     @GetMapping("/sales-by-restaurant")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<SalesByRestaurantReportDto>> getSalesByRestaurant() {
         List<SalesByRestaurantReportDto> sales = reportService.getSalesByRestaurant();
         return ResponseEntity.ok(sales);
@@ -65,6 +67,7 @@ public class ReportController {
             )
     })
     @GetMapping("/top-selling-products")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<TopSellingProductReportDto>> getTopSellingProducts() {
         List<TopSellingProductReportDto> topSellingProducts = reportService.getTopSellingProducts();
         return ResponseEntity.ok(topSellingProducts);
@@ -84,6 +87,7 @@ public class ReportController {
             )
     })
     @GetMapping("/active-consumers")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ActiveConsumerReportDto>> getActiveConsumers() {
         List<ActiveConsumerReportDto> activeConsumers = reportService.getActiveConsumers();
         return ResponseEntity.ok(activeConsumers);
@@ -114,6 +118,7 @@ public class ReportController {
             )
     })
     @GetMapping("/orders-by-period")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<OrderByPeriodReportDto>> getOrdersByPeriod(
             @Parameter(description = "Data de início do filtro", required = true, example = "2025-10-01")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
