@@ -10,6 +10,7 @@ import com.deliverytech.delivery_api.mapper.RestaurantMapper;
 import com.deliverytech.delivery_api.model.Restaurant;
 import com.deliverytech.delivery_api.model.enums.CepZonesDistance;
 import com.deliverytech.delivery_api.repository.RestaurantRepository;
+import com.deliverytech.delivery_api.security.SecurityService;
 import com.deliverytech.delivery_api.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Example;
@@ -20,14 +21,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.UUID;
 
-@Service
+@Service("restaurantServiceImpl")
 @RequiredArgsConstructor
 @Transactional
 public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantRepository restaurantRepository;
     private final RestaurantMapper mapper;
+    private final SecurityService securityService;
 
     public RestaurantResponseDto createRestaurant(RestaurantRequestDto dto) {
         if (existsByName(dto.getName())) {
@@ -134,6 +137,11 @@ public class RestaurantServiceImpl implements RestaurantService {
             case MEDIUM_DISTANCE -> deliveryTaxBase.add(new BigDecimal("5.00"));
             case LONG_DISTANCE -> deliveryTaxBase.add(new BigDecimal("10.00"));
         };
+    }
+
+    public boolean isOwner(String restaurantId) {
+        Optional<UUID> currentUserRestaurantId = securityService.getCurrentUserRestaurantId();
+        return currentUserRestaurantId.filter(uuid -> UUID.fromString(restaurantId).equals(uuid)).isPresent();
     }
 
 }

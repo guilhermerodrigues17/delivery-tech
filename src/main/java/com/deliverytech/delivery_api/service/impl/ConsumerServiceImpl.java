@@ -6,7 +6,9 @@ import com.deliverytech.delivery_api.exceptions.ConflictException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.mapper.ConsumerMapper;
 import com.deliverytech.delivery_api.model.Consumer;
+import com.deliverytech.delivery_api.model.User;
 import com.deliverytech.delivery_api.repository.ConsumerRepository;
+import com.deliverytech.delivery_api.security.SecurityService;
 import com.deliverytech.delivery_api.service.ConsumerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,14 +16,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
-@Service
+@Service("consumerServiceImpl")
 @RequiredArgsConstructor
 public class ConsumerServiceImpl implements ConsumerService {
 
     private final ConsumerRepository consumerRepository;
     private final ConsumerMapper mapper;
+    private final SecurityService securityService;
 
     public ConsumerResponseDto create(ConsumerRequestDto dto) {
         if (existsByEmail(dto.getEmail())) {
@@ -97,5 +101,15 @@ public class ConsumerServiceImpl implements ConsumerService {
         existingConsumer.setActive(false);
 
         consumerRepository.save(existingConsumer);
+    }
+
+    public boolean isOwnerByEmail(String consumerId) {
+        Optional<String> currentUserEmail = securityService.getCurrentUser().map(User::getEmail);
+        if (currentUserEmail.isEmpty()) {
+            return false;
+        }
+
+        Consumer consumer = findById(UUID.fromString(consumerId));
+        return consumer.getEmail().equalsIgnoreCase(currentUserEmail.get());
     }
 }

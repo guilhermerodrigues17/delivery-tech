@@ -12,6 +12,7 @@ import com.deliverytech.delivery_api.model.*;
 import com.deliverytech.delivery_api.model.enums.OrderStatus;
 import com.deliverytech.delivery_api.repository.OrderRepository;
 import com.deliverytech.delivery_api.repository.specification.OrderSpecification;
+import com.deliverytech.delivery_api.security.SecurityService;
 import com.deliverytech.delivery_api.service.ConsumerService;
 import com.deliverytech.delivery_api.service.OrderService;
 import com.deliverytech.delivery_api.service.ProductService;
@@ -28,9 +29,10 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-@Service
+@Service("orderServiceImpl")
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
@@ -39,6 +41,7 @@ public class OrderServiceImpl implements OrderService {
     private final RestaurantService restaurantService;
     private final ProductService productService;
     private final OrderMapper orderMapper;
+    private final SecurityService securityService;
 
     @Transactional
     public OrderResponseDto createOrder(OrderRequestDto dto) {
@@ -169,6 +172,26 @@ public class OrderServiceImpl implements OrderService {
 
         order.setStatus(OrderStatus.CANCELED);
         orderRepository.save(order);
+    }
+
+    public boolean isOrderOwnerByEmail(String orderId) {
+        Optional<String> currentUserEmail = securityService.getCurrentUser().map(User::getEmail);
+        if (currentUserEmail.isEmpty()) return false;
+
+        Order order = findById(orderId);
+        if (order.getConsumer() == null) return false;
+
+        return order.getConsumer().getEmail().equalsIgnoreCase(currentUserEmail.get());
+    }
+
+    public boolean isOrderOwnerRestaurant(String orderId) {
+        Optional<UUID> currentUserRestaurantId = securityService.getCurrentUserRestaurantId();
+        if (currentUserRestaurantId.isEmpty()) return false;
+
+        Order order = findById(orderId);
+        if (order.getRestaurant() == null) return false;
+
+        return order.getRestaurant().getId().equals(currentUserRestaurantId.get());
     }
 
     private BigDecimal calculateSubtotal(List<OrderItemRequestDto> items, UUID restaurantId) {

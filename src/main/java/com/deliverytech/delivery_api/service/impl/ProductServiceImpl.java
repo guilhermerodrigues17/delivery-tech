@@ -8,6 +8,7 @@ import com.deliverytech.delivery_api.mapper.ProductMapper;
 import com.deliverytech.delivery_api.model.Product;
 import com.deliverytech.delivery_api.model.Restaurant;
 import com.deliverytech.delivery_api.repository.ProductRepository;
+import com.deliverytech.delivery_api.security.SecurityService;
 import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +19,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
-@Service
+@Service("productServiceImpl")
 @RequiredArgsConstructor
 @Transactional
 public class ProductServiceImpl implements ProductService {
@@ -28,6 +30,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final RestaurantService restaurantService;
     private final ProductMapper productMapper;
+    private final SecurityService securityService;
 
     @Transactional
     public ProductResponseDto createProduct(ProductRequestDto dto) {
@@ -105,5 +108,15 @@ public class ProductServiceImpl implements ProductService {
         Product productFound = findProductEntityById(id);
         productFound.setAvailable(!productFound.getAvailable());
         productRepository.save(productFound);
+    }
+
+    public boolean isOwnerOfProductRestaurant(String productId) {
+        Optional<UUID> currentUserRestaurantId = securityService.getCurrentUserRestaurantId();
+        if (currentUserRestaurantId.isEmpty()) {
+            return false;
+        }
+
+        Product product = findProductEntityById(productId);
+        return product.getRestaurant().getId().equals(currentUserRestaurantId.get());
     }
 }
