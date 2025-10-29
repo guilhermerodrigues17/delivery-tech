@@ -7,6 +7,7 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -85,15 +86,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
-    @ExceptionHandler(NotAllowedException.class)
-    private ResponseEntity<ErrorResponse> handleNotAllowedException(NotAllowedException ex) {
-        var errorResponse = ErrorResponse.of(
-                ErrorCode.FORBIDDEN_ACCESS.getCode(),
-                ErrorCode.FORBIDDEN_ACCESS.getDefaultMessage(),
-                ex.getMessage());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
-    }
-
     @ExceptionHandler(IllegalStateException.class)
     private ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException ex) {
         var errorResponse = ErrorResponse.of(
@@ -123,6 +115,24 @@ public class GlobalExceptionHandler {
                 ErrorCode.UNPROCESSABLE_ENTITY.getDefaultMessage(),
                 ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
+    }
+
+    @ExceptionHandler({AuthenticationException.class})
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
+        ErrorResponse errorResponse = ErrorResponse.of(
+                ErrorCode.UNAUTHORIZED_ERROR.getCode(),
+                ErrorCode.UNAUTHORIZED_ERROR.getDefaultMessage()
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    @ExceptionHandler(NotAllowedException.class)
+    private ResponseEntity<ErrorResponse> handleNotAllowedException(NotAllowedException ex) {
+        var errorResponse = ErrorResponse.of(
+                ErrorCode.FORBIDDEN_ACCESS.getCode(),
+                ErrorCode.FORBIDDEN_ACCESS.getDefaultMessage(),
+                ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)

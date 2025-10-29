@@ -11,6 +11,7 @@ public enum ErrorCode {
     RESOURCE_NOT_FOUND("RESOURCE_NOT_FOUND", "O recurso solicitado não foi encontrado."),
     CONFLICT_ERROR("CONFLICT_ERROR", "Conflito de dados (ex: registro duplicado)."),
     FORBIDDEN_ACCESS("FORBIDDEN_ACCESS", "Acesso ou operação não permitida."),
+    UNAUTHORIZED_ERROR("UNAUTHORIZED_ERROR", "Credenciais inválidas."),
     UNPROCESSABLE_ENTITY("UNPROCESSABLE_ENTITY", "A requisição está semanticamente incorreta (ex: regra de negócio violada)."),
     BAD_REQUEST("BAD_REQUEST", "Requisição mal formada ou inválida."),
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "Erro inesperado no servidor.");
