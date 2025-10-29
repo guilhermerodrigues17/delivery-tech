@@ -1,7 +1,10 @@
 package com.deliverytech.delivery_api.controller;
 
+import com.deliverytech.delivery_api.dto.request.LoginRequestDto;
 import com.deliverytech.delivery_api.dto.request.RegisterUserRequestDto;
-import com.deliverytech.delivery_api.model.User;
+import com.deliverytech.delivery_api.dto.response.LoginResponseDto;
+import com.deliverytech.delivery_api.dto.response.RegisterResponseDto;
+import com.deliverytech.delivery_api.dto.response.wrappers.ApiResponseWrapper;
 import com.deliverytech.delivery_api.service.impl.UserServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,14 +22,15 @@ public class AuthController {
     private final UserServiceImpl userService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login() {
-        //TODO: to implement login logic
-        return ResponseEntity.ok("login");
+    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto dto) {
+        LoginResponseDto response = userService.login(dto);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterUserRequestDto dto) {
-        User user = userService.createUser(dto);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<ApiResponseWrapper<RegisterResponseDto>> register(@Valid @RequestBody RegisterUserRequestDto dto) {
+        var userCreated = userService.createUser(dto);
+        var response = ApiResponseWrapper.of(userCreated);
+        return ResponseEntity.ok(response);
     }
 }
