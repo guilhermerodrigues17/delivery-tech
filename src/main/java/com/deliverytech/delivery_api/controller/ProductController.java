@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +56,7 @@ public class ProductController {
                     )
             )
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANT') and @restaurantServiceImpl.isOwner(#dto.restaurantId))")
     public ResponseEntity<ApiResponseWrapper<ProductResponseDto>> createProduct(
@@ -167,6 +169,7 @@ public class ProductController {
                     )
             ),
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANT') and @productServiceImpl.isOwnerOfProductRestaurant(#id))")
     public ResponseEntity<ApiResponseWrapper<ProductResponseDto>> updateProduct(
@@ -210,6 +213,7 @@ public class ProductController {
                     )
             )
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANT') and @productServiceImpl.isOwnerOfProductRestaurant(#id))")
     public ResponseEntity<Void> toggleAvailability(
@@ -243,6 +247,7 @@ public class ProductController {
                     )
             )
     })
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANT') and @productServiceImpl.isOwnerOfProductRestaurant(#id))")
     public ResponseEntity<Void> deleteProduct(

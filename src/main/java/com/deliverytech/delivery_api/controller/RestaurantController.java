@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -70,6 +71,7 @@ public class RestaurantController {
                     )
             )
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponseWrapper<RestaurantResponseDto>> createRestaurant(
@@ -220,6 +222,7 @@ public class RestaurantController {
                     )
             ),
     })
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/{restaurantId}/orders")
     @PreAuthorize("hasRole('ADMIN') or @restaurantServiceImpl.isOwner(#restaurantId)")
     public ResponseEntity<PagedResponseWrapper<OrderSummaryResponseDto>> findOrdersByRestaurantId(
@@ -342,6 +345,7 @@ public class RestaurantController {
                     )
             ),
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or @restaurantServiceImpl.isOwner(#id)")
     public ResponseEntity<ApiResponseWrapper<RestaurantResponseDto>> updateRestaurant(
@@ -385,6 +389,7 @@ public class RestaurantController {
                     )
             ),
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN') or @restaurantServiceImpl.isOwner(#id)")
     public ResponseEntity<Void> updateStatusActive(

@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -27,7 +28,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/reports")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Relatórios", description = "Endpoints para gerenciamento de relatórios")
+@PreAuthorize("hasRole('ADMIN')")
 public class ReportController {
 
     private final ReportService reportService;
@@ -46,7 +49,6 @@ public class ReportController {
             )
     })
     @GetMapping("/sales-by-restaurant")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<SalesByRestaurantReportDto>> getSalesByRestaurant() {
         List<SalesByRestaurantReportDto> sales = reportService.getSalesByRestaurant();
         return ResponseEntity.ok(sales);
@@ -67,7 +69,6 @@ public class ReportController {
             )
     })
     @GetMapping("/top-selling-products")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<TopSellingProductReportDto>> getTopSellingProducts() {
         List<TopSellingProductReportDto> topSellingProducts = reportService.getTopSellingProducts();
         return ResponseEntity.ok(topSellingProducts);
@@ -87,7 +88,6 @@ public class ReportController {
             )
     })
     @GetMapping("/active-consumers")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ActiveConsumerReportDto>> getActiveConsumers() {
         List<ActiveConsumerReportDto> activeConsumers = reportService.getActiveConsumers();
         return ResponseEntity.ok(activeConsumers);
@@ -118,7 +118,6 @@ public class ReportController {
             )
     })
     @GetMapping("/orders-by-period")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<OrderByPeriodReportDto>> getOrdersByPeriod(
             @Parameter(description = "Data de início do filtro", required = true, example = "2025-10-01")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
