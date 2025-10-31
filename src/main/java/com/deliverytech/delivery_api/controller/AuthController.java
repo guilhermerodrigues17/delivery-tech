@@ -8,6 +8,7 @@ import com.deliverytech.delivery_api.dto.response.wrappers.ApiResponseWrapper;
 import com.deliverytech.delivery_api.service.impl.UserServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,6 +32,6 @@ public class AuthController {
     public ResponseEntity<ApiResponseWrapper<RegisterResponseDto>> register(@Valid @RequestBody RegisterUserRequestDto dto) {
         var userCreated = userService.createUser(dto);
         var response = ApiResponseWrapper.of(userCreated);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
