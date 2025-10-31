@@ -42,7 +42,8 @@ public class SecurityConfig {
             "/scalar-ui.html",
             "/webjars/scalar/**",
             "/swagger-ui/**",
-            "/swagger-ui.html"
+            "/swagger-ui.html",
+            "/api-docs/**"
     };
 
     @Bean
