@@ -9,6 +9,7 @@ import com.deliverytech.delivery_api.repository.ProductRepository;
 import com.deliverytech.delivery_api.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
+@Profile("dev")
 @RequiredArgsConstructor
 public class DataLoader implements CommandLineRunner {
 
