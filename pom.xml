@@ -149,6 +149,7 @@
                 <configuration>
                     <argLine>
                         @{surefireArgLine}
+                        -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
                         --add-opens java.base/java.lang=ALL-UNNAMED
                         -Xshare:off
                     </argLine>
