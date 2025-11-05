@@ -3,6 +3,8 @@ package com.deliverytech.delivery_api.service.impl;
 import com.deliverytech.delivery_api.dto.request.OrderItemRequestDto;
 import com.deliverytech.delivery_api.dto.request.OrderRequestDto;
 import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
+import com.deliverytech.delivery_api.dto.response.OrderSummaryResponseDto;
+import com.deliverytech.delivery_api.dto.response.OrderTotalResponseDto;
 import com.deliverytech.delivery_api.exceptions.BusinessException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.mapper.OrderMapper;
@@ -13,6 +15,7 @@ import com.deliverytech.delivery_api.security.SecurityService;
 import com.deliverytech.delivery_api.service.ConsumerService;
 import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,8 +24,15 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -293,6 +303,375 @@ class OrderServiceImplTest {
 
             verify(orderRepository, never()).save(any(Order.class));
             verify(orderMapper, never()).toDto(any(Order.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("findByRestaurantId() tests")
+    class FindByRestaurantIdTests {
+
+        private UUID restaurantId;
+        private String restaurantIdString;
+        private Pageable pageable;
+        private Restaurant mockRestaurant;
+
+        @BeforeEach
+        void setUp() {
+            restaurantId = UUID.randomUUID();
+            restaurantIdString = restaurantId.toString();
+            pageable = PageRequest.of(0, 5);
+
+            mockRestaurant = new Restaurant();
+            mockRestaurant.setId(restaurantId);
+        }
+
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when restaurantId is not a valid UUID")
+        void should_ThrowIllegalArgumentException_When_IdIsInvalidUUID() {
+            String invalidUuidString = "not-a-uuid";
+
+            assertThrows(IllegalArgumentException.class, () -> {
+                orderService.findByRestaurantId(invalidUuidString, pageable);
+            });
+
+            verify(restaurantService, never()).findById(any(UUID.class));
+            verify(orderRepository, never()).findByRestaurantId(any(UUID.class), any(Pageable.class));
+        }
+
+        @Test
+        @DisplayName("Should throw ResourceNotFoundException when restaurantId does not exist")
+        void should_ThrowResourceNotFound_When_RestaurantNotFound() {
+            when(restaurantService.findById(restaurantId)).thenThrow(new ResourceNotFoundException("Restaurante não encontrado"));
+
+            ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+                orderService.findByRestaurantId(restaurantIdString, pageable);
+            });
+
+            assertEquals("Restaurante não encontrado", exception.getMessage());
+
+            verify(restaurantService).findById(restaurantId);
+            verify(orderRepository, never()).findByRestaurantId(any(UUID.class), any(Pageable.class));
+        }
+
+        @Test
+        @DisplayName("Should return empty Page when restaurant has no orders")
+        void should_ReturnEmptyPage_When_RestaurantHasNoOrders() {
+            when(restaurantService.findById(restaurantId)).thenReturn(mockRestaurant);
+
+            Page<Order> emptyPage = Page.empty(pageable);
+            when(orderRepository.findByRestaurantId(restaurantId, pageable)).thenReturn(emptyPage);
+
+            Page<OrderSummaryResponseDto> resultPage = orderService.findByRestaurantId(restaurantIdString, pageable);
+
+            assertNotNull(resultPage);
+            assertTrue(resultPage.isEmpty());
+            assertEquals(0, resultPage.getTotalElements());
+
+            verify(restaurantService).findById(restaurantId);
+            verify(orderRepository).findByRestaurantId(restaurantId, pageable);
+            verify(orderMapper, never()).toSummaryDto(any(Order.class));
+        }
+
+        @Test
+        @DisplayName("Should return paged DTOs when restaurant has orders")
+        void should_ReturnDtoPage_When_RestaurantHasOrders() {
+            Order mockOrder = new Order();
+            mockOrder.setId(UUID.randomUUID());
+            mockOrder.setRestaurant(mockRestaurant);
+
+            List<Order> orderList = List.of(mockOrder);
+            Page<Order> mockRepoPage = new PageImpl<>(orderList, pageable, 1);
+
+            OrderSummaryResponseDto expectedDto = new OrderSummaryResponseDto(
+                    mockOrder.getId(), "Test Restaurant", OrderStatus.PENDING, BigDecimal.TEN
+            );
+
+            when(restaurantService.findById(restaurantId)).thenReturn(mockRestaurant);
+            when(orderRepository.findByRestaurantId(restaurantId, pageable)).thenReturn(mockRepoPage);
+            when(orderMapper.toSummaryDto(mockOrder)).thenReturn(expectedDto);
+
+            Page<OrderSummaryResponseDto> resultPage = orderService.findByRestaurantId(restaurantIdString, pageable);
+
+            assertNotNull(resultPage);
+            assertEquals(1, resultPage.getTotalElements());
+            assertEquals(1, resultPage.getContent().size());
+            assertEquals(expectedDto, resultPage.getContent().getFirst());
+
+            verify(restaurantService).findById(restaurantId);
+            verify(orderRepository).findByRestaurantId(restaurantId, pageable);
+            verify(orderMapper).toSummaryDto(mockOrder);
+        }
+    }
+
+    @Nested
+    @DisplayName("searchOrders() tests")
+    class SearchOrdersTests {
+
+        private Pageable pageable;
+        private LocalDate startDate;
+        private LocalDate endDate;
+
+        @BeforeEach
+        void setUp() {
+            pageable = PageRequest.of(0, 5);
+            startDate = LocalDate.of(2025, 1, 1);
+            endDate = LocalDate.of(2025, 1, 31);
+        }
+
+        @Test
+        @DisplayName("Should call findAll with Specification and map results when all filters are provided")
+        void should_CallFindAllAndMap_When_AllFiltersProvided() {
+            Order mockOrder = new Order();
+            mockOrder.setId(UUID.randomUUID());
+            List<Order> orderList = List.of(mockOrder);
+            Page<Order> mockRepoPage = new PageImpl<>(orderList, pageable, 1);
+
+            OrderSummaryResponseDto expectedDto = new OrderSummaryResponseDto(
+                    mockOrder.getId(), "Test Restaurant", OrderStatus.DELIVERED, BigDecimal.TEN
+            );
+
+            when(orderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(mockRepoPage);
+            when(orderMapper.toSummaryDto(mockOrder)).thenReturn(expectedDto);
+
+            Page<OrderSummaryResponseDto> resultPage = orderService
+                    .searchOrders(OrderStatus.DELIVERED, startDate, endDate, pageable);
+
+            assertNotNull(resultPage);
+            assertEquals(1, resultPage.getTotalElements());
+            assertEquals(expectedDto, resultPage.getContent().getFirst());
+
+            verify(orderRepository).findAll(any(Specification.class), eq(pageable));
+            verify(orderMapper).toSummaryDto(mockOrder);
+        }
+
+        @Test
+        @DisplayName("Should call findAll with Specification when filters are null")
+        void should_CallFindAll_When_FiltersAreNull() {
+            Page<Order> emptyPage = Page.empty(pageable);
+
+            when(orderRepository.findAll(any(Specification.class), eq(pageable)))
+                    .thenReturn(emptyPage);
+
+            Page<OrderSummaryResponseDto> resultPage = orderService.searchOrders(null, null, null, pageable);
+
+            assertNotNull(resultPage);
+            assertTrue(resultPage.isEmpty());
+
+            verify(orderRepository).findAll(any(Specification.class), eq(pageable));
+            verify(orderMapper, never()).toSummaryDto(any(Order.class));
+        }
+
+        @Test
+        @DisplayName("Should correctly handle logic when only startDate is provided")
+        void should_HandleLogic_When_OnlyStartDateIsProvided() {
+            Page<Order> emptyPage = Page.empty(pageable);
+
+            when(orderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(emptyPage);
+
+            Page<OrderSummaryResponseDto> resultPage = orderService
+                    .searchOrders(OrderStatus.PENDING, startDate, null, pageable);
+
+            assertNotNull(resultPage);
+            assertTrue(resultPage.isEmpty());
+
+            verify(orderRepository).findAll(any(Specification.class), eq(pageable));
+            verify(orderMapper, never()).toSummaryDto(any(Order.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("calculateOrderTotal() tests")
+    class CalculateOrderTotalTests {
+
+        private OrderRequestDto requestDto;
+        private UUID restaurantId;
+        private UUID productId;
+        private Restaurant mockRestaurant;
+        private Product mockProduct;
+
+        @BeforeEach
+        void setUp() {
+            restaurantId = UUID.randomUUID();
+            productId = UUID.randomUUID();
+
+            OrderItemRequestDto itemDto = new OrderItemRequestDto(productId, 2);
+            List<OrderItemRequestDto> items = new ArrayList<>();
+            items.add(itemDto);
+            requestDto = new OrderRequestDto(UUID.randomUUID(), restaurantId, items);
+
+            mockRestaurant = new Restaurant();
+            mockRestaurant.setId(restaurantId);
+            mockRestaurant.setDeliveryTax(new BigDecimal("8.00"));
+
+            mockProduct = new Product();
+            mockProduct.setId(productId);
+            mockProduct.setPrice(new BigDecimal("10.00"));
+            mockProduct.setRestaurant(mockRestaurant);
+        }
+
+        @Test
+        @DisplayName("Should throw ResourceNotFoundException when restaurant does not exist")
+        void should_ThrowResourceNotFound_When_RestaurantNotFound() {
+            when(restaurantService.findById(restaurantId)).thenThrow(new ResourceNotFoundException("Restaurante não encontrado"));
+
+            ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+                orderService.calculateOrderTotal(requestDto);
+            });
+
+            assertEquals("Restaurante não encontrado", exception.getMessage());
+
+            verify(restaurantService).findById(restaurantId);
+            verify(productService, never()).findProductEntityById(anyString());
+        }
+
+        @Test
+        @DisplayName("Should throw ResourceNotFoundException when product does not exist")
+        void should_ThrowResourceNotFound_When_ProductNotFound() {
+            when(restaurantService.findById(restaurantId)).thenReturn(mockRestaurant);
+            when(productService.findProductEntityById(productId.toString()))
+                    .thenThrow(new ResourceNotFoundException("Produto não encontrado"));
+
+            ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+                orderService.calculateOrderTotal(requestDto);
+            });
+
+            assertEquals("Produto não encontrado", exception.getMessage());
+
+            verify(restaurantService).findById(restaurantId);
+            verify(productService).findProductEntityById(productId.toString());
+        }
+
+        @Test
+        @DisplayName("Should throw BusinessException when product does not belong to restaurant")
+        void should_ThrowBusinessException_When_ProductDoesNotBelongToRestaurant() {
+            Restaurant otherRestaurant = new Restaurant();
+            otherRestaurant.setId(UUID.randomUUID());
+            mockProduct.setRestaurant(otherRestaurant);
+
+            when(restaurantService.findById(restaurantId)).thenReturn(mockRestaurant);
+            when(productService.findProductEntityById(productId.toString())).thenReturn(mockProduct);
+
+            BusinessException exception = assertThrows(BusinessException.class, () -> {
+                orderService.calculateOrderTotal(requestDto);
+            });
+
+            assertTrue(exception.getMessage().contains("não pertence ao restaurante informado"));
+
+            verify(restaurantService).findById(restaurantId);
+            verify(productService).findProductEntityById(productId.toString());
+        }
+
+        @Test
+        @DisplayName("Should return correct totals when data is valid")
+        void should_ReturnCorrectTotals_When_DataIsValid() {
+            UUID productId2 = UUID.randomUUID();
+            Product mockProduct2 = new Product();
+            mockProduct2.setId(productId2);
+            mockProduct2.setPrice(new BigDecimal("5.00"));
+            mockProduct2.setRestaurant(mockRestaurant);
+
+            requestDto.getItems().add(new OrderItemRequestDto(productId2, 1));
+
+            when(restaurantService.findById(restaurantId)).thenReturn(mockRestaurant);
+            when(productService.findProductEntityById(productId.toString())).thenReturn(mockProduct);
+            when(productService.findProductEntityById(productId2.toString())).thenReturn(mockProduct2);
+
+            OrderTotalResponseDto response = orderService.calculateOrderTotal(requestDto);
+
+            assertNotNull(response);
+
+            assertEquals(0, response.subtotal().compareTo(new BigDecimal("25.00")));
+            assertEquals(0, response.deliveryTax().compareTo(new BigDecimal("8.00")));
+            assertEquals(0, response.total().compareTo(new BigDecimal("33.00")));
+
+            verify(restaurantService).findById(restaurantId);
+            verify(productService).findProductEntityById(productId.toString());
+            verify(productService).findProductEntityById(productId2.toString());
+        }
+    }
+
+    @Nested
+    @DisplayName("cancelOrder() tests")
+    class CancelOrderTests {
+
+        private UUID orderId;
+        private String orderIdString;
+        private Order mockOrder;
+
+        @BeforeEach
+        void setUp() {
+            orderId = UUID.randomUUID();
+            orderIdString = orderId.toString();
+
+            mockOrder = new Order();
+            mockOrder.setId(orderId);
+            mockOrder.setRestaurant(new Restaurant());
+            mockOrder.setConsumer(new Consumer());
+        }
+
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when orderId is not a valid UUID")
+        void should_ThrowIllegalArgumentException_When_IdIsInvalidUUID() {
+            String invalidUuidString = "not-a-uuid";
+
+            assertThrows(IllegalArgumentException.class, () -> {
+                orderService.cancelOrder(invalidUuidString);
+            });
+
+            verify(orderRepository, never()).findById(any(UUID.class));
+            verify(orderRepository, never()).save(any(Order.class));
+        }
+
+        @Test
+        @DisplayName("Should throw ResourceNotFoundException when orderId does not exist")
+        void should_ThrowResourceNotFound_When_OrderNotFound() {
+            when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+            assertThrows(ResourceNotFoundException.class, () -> {
+                orderService.cancelOrder(orderIdString);
+            });
+
+            verify(orderRepository).findById(orderId);
+            verify(orderRepository, never()).save(any(Order.class));
+        }
+
+        @Test
+        @DisplayName("Should throw BusinessException when order status cannot transition to CANCELED")
+        void should_ThrowBusinessException_When_TransitionIsInvalid() {
+            mockOrder.setStatus(OrderStatus.DELIVERED);
+
+            when(orderRepository.findById(orderId)).thenReturn(Optional.of(mockOrder));
+
+            BusinessException exception = assertThrows(BusinessException.class, () -> {
+                orderService.cancelOrder(orderIdString);
+            });
+
+            String expectedMessage = String.format("Não é possível cancelar o pedido com status '%s'.", OrderStatus.DELIVERED);
+            assertEquals(expectedMessage, exception.getMessage());
+
+            verify(orderRepository).findById(orderId);
+            verify(orderRepository, never()).save(any(Order.class));
+        }
+
+        @Test
+        @DisplayName("Should update status to CANCELED when transition is valid")
+        void should_UpdateStatusToCanceled_When_TransitionIsValid() {
+            mockOrder.setStatus(OrderStatus.PENDING);
+
+            when(orderRepository.findById(orderId)).thenReturn(Optional.of(mockOrder));
+            when(orderRepository.save(any(Order.class))).thenReturn(null);
+
+            ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+
+            assertDoesNotThrow(() -> {
+                orderService.cancelOrder(orderIdString);
+            });
+
+            verify(orderRepository).findById(orderId);
+            verify(orderRepository).save(orderCaptor.capture());
+
+            Order savedOrder = orderCaptor.getValue();
+            assertEquals(OrderStatus.CANCELED, savedOrder.getStatus());
         }
     }
 }
