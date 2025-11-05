@@ -7,12 +7,14 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.UUID;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Schema(description = "DTO para criar um pedido")
 public class OrderRequestDto {
     @Schema(description = "ID do cliente", example = "493897d6-f2f7-42a5-8847-a6335b6604f9")
