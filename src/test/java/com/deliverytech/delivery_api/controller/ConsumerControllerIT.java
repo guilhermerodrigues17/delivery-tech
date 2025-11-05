@@ -3,10 +3,15 @@ package com.deliverytech.delivery_api.controller;
 import com.deliverytech.delivery_api.BaseIntegrationTest;
 import com.deliverytech.delivery_api.dto.request.ConsumerRequestDto;
 import com.deliverytech.delivery_api.model.Consumer;
+import com.deliverytech.delivery_api.model.Order;
+import com.deliverytech.delivery_api.model.Restaurant;
 import com.deliverytech.delivery_api.model.User;
 import com.deliverytech.delivery_api.model.enums.ErrorCode;
+import com.deliverytech.delivery_api.model.enums.OrderStatus;
 import com.deliverytech.delivery_api.model.enums.Role;
 import com.deliverytech.delivery_api.repository.ConsumerRepository;
+import com.deliverytech.delivery_api.repository.OrderRepository;
+import com.deliverytech.delivery_api.repository.RestaurantRepository;
 import com.deliverytech.delivery_api.repository.UserRepository;
 import com.deliverytech.delivery_api.security.SecurityService;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,6 +44,12 @@ class ConsumerControllerIT extends BaseIntegrationTest {
     private ConsumerRepository consumerRepository;
 
     @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private RestaurantRepository restaurantRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @MockitoBean
@@ -47,11 +59,15 @@ class ConsumerControllerIT extends BaseIntegrationTest {
     private Consumer consumerA;
     private User userB;
     private Consumer consumerB;
+    private Restaurant restaurantA;
+    private Order orderForConsumerA;
 
     @BeforeEach
     void setUp() {
-        userRepository.deleteAll();
-        consumerRepository.deleteAll();
+        orderRepository.deleteAllInBatch();
+        userRepository.deleteAllInBatch();
+        consumerRepository.deleteAllInBatch();
+        restaurantRepository.deleteAllInBatch();
 
         consumerA = new Consumer();
         consumerA.setName("Consumer A");
@@ -84,6 +100,25 @@ class ConsumerControllerIT extends BaseIntegrationTest {
         userB.setRole(Role.CUSTOMER);
         userB.setActive(true);
         userRepository.saveAndFlush(userB);
+
+        restaurantA = new Restaurant();
+        restaurantA.setName("Test Restaurant");
+        restaurantA.setCategory("BRASILEIRA");
+        restaurantA.setAddress("Address A");
+        restaurantA.setPhoneNumber("333333333");
+        restaurantA.setDeliveryTax(new BigDecimal("10.00"));
+        restaurantA.setActive(true);
+        restaurantA = restaurantRepository.saveAndFlush(restaurantA);
+
+        orderForConsumerA = new Order();
+        orderForConsumerA.setConsumer(consumerA);
+        orderForConsumerA.setRestaurant(restaurantA);
+        orderForConsumerA.setDeliveryAddress(consumerA.getAddress());
+        orderForConsumerA.setDeliveryTax(restaurantA.getDeliveryTax());
+        orderForConsumerA.setStatus(OrderStatus.DELIVERED);
+        orderForConsumerA.setSubtotal(new BigDecimal("50.00"));
+        orderForConsumerA.setTotal(new BigDecimal("60.00"));
+        orderForConsumerA = orderRepository.saveAndFlush(orderForConsumerA);
     }
 
     @Nested
@@ -189,6 +224,89 @@ class ConsumerControllerIT extends BaseIntegrationTest {
                     .andExpect(jsonPath("$.error.code", is(ErrorCode.FORBIDDEN_ACCESS.getCode())))
                     .andExpect(jsonPath("$.error.message", is(ErrorCode.FORBIDDEN_ACCESS.getDefaultMessage())))
                     .andExpect(jsonPath("$.timestamp", notNullValue()));
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /consumers/{consumerId}/orders tests")
+    class FindOrdersByConsumerIdTests {
+
+        @Test
+        @DisplayName("Should return 401 - Unauthorized when not authenticated")
+        void should_ReturnUnauthorized_When_NotAuthenticated() throws Exception {
+
+            mockMvc.perform(get("/consumers/{id}/orders", consumerA.getId()))
+                    .andExpect(status().isUnauthorized())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.UNAUTHORIZED_ERROR.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.UNAUTHORIZED_ERROR.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 403 - Forbidden when CUSTOMER gets another consumer's orders")
+        @WithMockUser(roles = "CUSTOMER")
+        void should_ReturnForbidden_When_GettingAnotherConsumersOrders() throws Exception {
+            when(securityService.getCurrentUser()).thenReturn(Optional.of(userB));
+
+            mockMvc.perform(get("/consumers/{id}/orders", consumerA.getId()))
+                    .andExpect(status().isForbidden())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.FORBIDDEN_ACCESS.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.FORBIDDEN_ACCESS.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 404 - Not Found when ADMIN requests orders for non-existent consumer")
+        @WithMockUser(roles = "ADMIN")
+        void should_ReturnResourceNotFound_When_AdminRequestsNonExistentConsumer() throws Exception {
+
+            mockMvc.perform(get("/consumers/{id}/orders", UUID.randomUUID().toString()))
+                    .andExpect(status().isNotFound())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.RESOURCE_NOT_FOUND.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.RESOURCE_NOT_FOUND.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 200 - OK (and Paged Response) when CUSTOMER gets their own orders")
+        @WithMockUser(roles = "CUSTOMER")
+        void should_ReturnOk_When_CustomerGetsOwnOrders() throws Exception {
+            when(securityService.getCurrentUser()).thenReturn(Optional.of(userA));
+
+            mockMvc.perform(get("/consumers/{id}/orders", consumerA.getId())
+                            .param("page", "0")
+                            .param("size", "10")
+                    )
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.content", notNullValue()))
+                    .andExpect(jsonPath("$.page.totalElements", is(1)))
+                    .andExpect(jsonPath("$.page.totalPages", is(1)))
+
+                    .andExpect(jsonPath("$.content[0].id", is(orderForConsumerA.getId().toString())))
+                    .andExpect(jsonPath("$.content[0].restaurantName", is("Test Restaurant")))
+                    .andExpect(jsonPath("$.content[0].status", is(OrderStatus.DELIVERED.name())));
+        }
+
+        @Test
+        @DisplayName("Should return 200 - OK (and Paged Response) when ADMIN gets any consumer's orders")
+        @WithMockUser(roles = "ADMIN")
+        void should_ReturnOk_When_AdminGetsAnyConsumersOrders() throws Exception {
+            mockMvc.perform(get("/consumers/{id}/orders", consumerA.getId()))
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.content[0].id", is(orderForConsumerA.getId().toString())))
+                    .andExpect(jsonPath("$.content[0].restaurantName", is("Test Restaurant")))
+                    .andExpect(jsonPath("$.content[0].status", is(OrderStatus.DELIVERED.name())));
         }
     }
 
