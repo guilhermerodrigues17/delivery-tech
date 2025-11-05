@@ -359,4 +359,61 @@ public class ConsumerServiceImplTest {
             verify(mapper).toDto(any(Consumer.class));
         }
     }
+
+    @Nested
+    @DisplayName("findByEmail() tests")
+    class FindByEmailTests {
+
+        private String testEmail;
+
+        @BeforeEach
+        void setUp() {
+            testEmail = "test@email.com";
+        }
+
+        @Test
+        @DisplayName("Should throw ResourceNotFoundException when email is not found")
+        void should_ThrowResourceNotFound_When_EmailNotFound() {
+            when(consumerRepository.findByEmail(testEmail)).thenReturn(Optional.empty());
+
+            ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+                consumerService.findByEmail(testEmail);
+            });
+
+            assertEquals("Cliente não encontrado", exception.getMessage());
+
+            verify(consumerRepository).findByEmail(testEmail);
+            verify(mapper, never()).toDto(any(Consumer.class));
+        }
+
+        @Test
+        @DisplayName("Should return ConsumerResponseDto when email exists")
+        void should_ReturnConsumerDto_When_EmailExists() {
+            Consumer foundConsumer = new Consumer();
+            foundConsumer.setId(UUID.randomUUID());
+            foundConsumer.setEmail(testEmail);
+            foundConsumer.setName("Test User");
+
+            ConsumerResponseDto expectedDto = new ConsumerResponseDto(
+                    foundConsumer.getId(),
+                    foundConsumer.getName(),
+                    foundConsumer.getEmail(),
+                    null,
+                    null,
+                    null
+            );
+
+            when(consumerRepository.findByEmail(testEmail)).thenReturn(Optional.of(foundConsumer));
+            when(mapper.toDto(foundConsumer)).thenReturn(expectedDto);
+
+            ConsumerResponseDto actualDto = consumerService.findByEmail(testEmail);
+
+            assertNotNull(actualDto);
+            assertEquals(expectedDto, actualDto);
+            assertEquals(testEmail, actualDto.email());
+
+            verify(consumerRepository).findByEmail(testEmail);
+            verify(mapper).toDto(foundConsumer);
+        }
+    }
 }
