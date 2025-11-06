@@ -12,6 +12,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.method.MethodValidationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -72,6 +73,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     private ResponseEntity<ErrorResponse> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
+        var errorResponse = ErrorResponse.of(
+                ErrorCode.BAD_REQUEST.getCode(),
+                ErrorCode.BAD_REQUEST.getDefaultMessage(),
+                ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(UnsatisfiedServletRequestParameterException.class)
+    private ResponseEntity<ErrorResponse> handleUnsatisfiedServletRequestParameterException(UnsatisfiedServletRequestParameterException ex) {
         var errorResponse = ErrorResponse.of(
                 ErrorCode.BAD_REQUEST.getCode(),
                 ErrorCode.BAD_REQUEST.getDefaultMessage(),
