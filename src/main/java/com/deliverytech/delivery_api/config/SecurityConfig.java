@@ -54,6 +54,7 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/restaurants/{restaurantId}/orders").authenticated()
                     .requestMatchers(HttpMethod.GET, "/restaurants/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
