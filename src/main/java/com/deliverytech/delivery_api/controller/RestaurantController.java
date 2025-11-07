@@ -301,7 +301,7 @@ public class RestaurantController {
                     )
             )
     })
-    @GetMapping(value = "/nearby", params = "cep")
+    @GetMapping(value = "/search/nearby", params = "cep")
     public ResponseEntity<PagedResponseWrapper<RestaurantResponseDto>> findRestaurantsNearby(
             @Parameter(description = "CEP do cliente", required = true, example = "12345-678")
             @RequestParam
