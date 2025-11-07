@@ -25,6 +25,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -59,16 +60,9 @@ class ConsumerControllerIT extends BaseIntegrationTest {
     private Consumer consumerA;
     private User userB;
     private Consumer consumerB;
-    private Restaurant restaurantA;
-    private Order orderForConsumerA;
 
     @BeforeEach
-    void setUp() {
-        orderRepository.deleteAllInBatch();
-        userRepository.deleteAllInBatch();
-        consumerRepository.deleteAllInBatch();
-        restaurantRepository.deleteAllInBatch();
-
+    void createCommonData() {
         consumerA = new Consumer();
         consumerA.setName("Consumer A");
         consumerA.setEmail("userA@email.com");
@@ -76,14 +70,6 @@ class ConsumerControllerIT extends BaseIntegrationTest {
         consumerA.setPhoneNumber("111111111");
         consumerA.setActive(true);
         consumerA = consumerRepository.saveAndFlush(consumerA);
-
-        userA = new User();
-        userA.setName("User A");
-        userA.setEmail("userA@email.com");
-        userA.setPassword(passwordEncoder.encode("123"));
-        userA.setRole(Role.CUSTOMER);
-        userA.setActive(true);
-        userRepository.saveAndFlush(userA);
 
         consumerB = new Consumer();
         consumerB.setName("Consumer B");
@@ -93,32 +79,20 @@ class ConsumerControllerIT extends BaseIntegrationTest {
         consumerB.setActive(true);
         consumerB = consumerRepository.saveAndFlush(consumerB);
 
+        userA = new User();
+        userA.setName("User A");
+        userA.setEmail("userA@email.com");
+        userA.setPassword(passwordEncoder.encode("123"));
+        userA.setRole(Role.CUSTOMER);
+        userA.setActive(true);
+
         userB = new User();
         userB.setName("User B");
         userB.setEmail("userB@email.com");
         userB.setPassword(passwordEncoder.encode("123"));
         userB.setRole(Role.CUSTOMER);
         userB.setActive(true);
-        userRepository.saveAndFlush(userB);
-
-        restaurantA = new Restaurant();
-        restaurantA.setName("Test Restaurant");
-        restaurantA.setCategory("BRASILEIRA");
-        restaurantA.setAddress("Address A");
-        restaurantA.setPhoneNumber("333333333");
-        restaurantA.setDeliveryTax(new BigDecimal("10.00"));
-        restaurantA.setActive(true);
-        restaurantA = restaurantRepository.saveAndFlush(restaurantA);
-
-        orderForConsumerA = new Order();
-        orderForConsumerA.setConsumer(consumerA);
-        orderForConsumerA.setRestaurant(restaurantA);
-        orderForConsumerA.setDeliveryAddress(consumerA.getAddress());
-        orderForConsumerA.setDeliveryTax(restaurantA.getDeliveryTax());
-        orderForConsumerA.setStatus(OrderStatus.DELIVERED);
-        orderForConsumerA.setSubtotal(new BigDecimal("50.00"));
-        orderForConsumerA.setTotal(new BigDecimal("60.00"));
-        orderForConsumerA = orderRepository.saveAndFlush(orderForConsumerA);
+        userRepository.saveAllAndFlush(List.of(userA, userB));
     }
 
     @Nested
@@ -231,6 +205,31 @@ class ConsumerControllerIT extends BaseIntegrationTest {
     @DisplayName("GET /consumers/{consumerId}/orders tests")
     class FindOrdersByConsumerIdTests {
 
+        private Restaurant restaurant;
+        private Order orderForConsumerA;
+
+        @BeforeEach
+        void setUp() {
+            restaurant = new Restaurant();
+            restaurant.setName("Test Restaurant");
+            restaurant.setCategory("BRASILEIRA");
+            restaurant.setAddress("Address A");
+            restaurant.setPhoneNumber("333333333");
+            restaurant.setDeliveryTax(new BigDecimal("10.00"));
+            restaurant.setActive(true);
+            restaurant = restaurantRepository.saveAndFlush(restaurant);
+
+            orderForConsumerA = new Order();
+            orderForConsumerA.setConsumer(consumerA);
+            orderForConsumerA.setRestaurant(restaurant);
+            orderForConsumerA.setDeliveryAddress(consumerA.getAddress());
+            orderForConsumerA.setDeliveryTax(restaurant.getDeliveryTax());
+            orderForConsumerA.setStatus(OrderStatus.DELIVERED);
+            orderForConsumerA.setSubtotal(new BigDecimal("50.00"));
+            orderForConsumerA.setTotal(new BigDecimal("60.00"));
+            orderForConsumerA = orderRepository.saveAndFlush(orderForConsumerA);
+        }
+
         @Test
         @DisplayName("Should return 401 - Unauthorized when not authenticated")
         void should_ReturnUnauthorized_When_NotAuthenticated() throws Exception {
@@ -293,7 +292,7 @@ class ConsumerControllerIT extends BaseIntegrationTest {
                     .andExpect(jsonPath("$.page.totalPages", is(1)))
 
                     .andExpect(jsonPath("$.content[0].id", is(orderForConsumerA.getId().toString())))
-                    .andExpect(jsonPath("$.content[0].restaurantName", is("Test Restaurant")))
+                    .andExpect(jsonPath("$.content[0].restaurantName", is(restaurant.getName())))
                     .andExpect(jsonPath("$.content[0].status", is(OrderStatus.DELIVERED.name())));
         }
 
@@ -305,7 +304,7 @@ class ConsumerControllerIT extends BaseIntegrationTest {
                     .andExpect(status().isOk())
 
                     .andExpect(jsonPath("$.content[0].id", is(orderForConsumerA.getId().toString())))
-                    .andExpect(jsonPath("$.content[0].restaurantName", is("Test Restaurant")))
+                    .andExpect(jsonPath("$.content[0].restaurantName", is(restaurant.getName())))
                     .andExpect(jsonPath("$.content[0].status", is(OrderStatus.DELIVERED.name())));
         }
     }
@@ -402,7 +401,6 @@ class ConsumerControllerIT extends BaseIntegrationTest {
             existingConsumer.setAddress("Rua A, 100");
             existingConsumer.setPhoneNumber("11000000000");
             existingConsumer.setActive(true);
-
             consumerRepository.saveAndFlush(existingConsumer);
 
             String jsonBody = objectMapper.writeValueAsString(validDto);
