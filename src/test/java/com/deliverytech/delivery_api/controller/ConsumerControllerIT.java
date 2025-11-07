@@ -696,4 +696,87 @@ class ConsumerControllerIT extends BaseIntegrationTest {
             assertFalse(deletedConsumer.get().getActive(), "Consumer 'active' flag should be false");
         }
     }
+
+    @Nested
+    @DisplayName("GET /consumers/email/{email} tests")
+    class GetConsumerByEmailTests {
+
+        @Test
+        @DisplayName("Should return 401 - Unauthorized when not authenticated")
+        void should_ReturnUnauthorized_When_NotAuthenticated() throws Exception {
+
+            mockMvc.perform(get("/consumers/email/{email}", consumerA.getEmail()))
+                    .andExpect(status().isUnauthorized())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.UNAUTHORIZED_ERROR.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.UNAUTHORIZED_ERROR.getDefaultMessage())));
+        }
+
+
+        @Test
+        @DisplayName("Should return 403 - Forbidden when authenticated as CUSTOMER")
+        @WithMockUser(roles = "CUSTOMER")
+        void should_ReturnForbidden_When_RoleIsCustomer() throws Exception {
+
+            mockMvc.perform(get("/consumers/email/{email}", consumerA.getEmail()))
+                    .andExpect(status().isForbidden())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.FORBIDDEN_ACCESS.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.FORBIDDEN_ACCESS.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 400 - Bad Request when ADMIN sends an invalid email format")
+        @WithMockUser(roles = "ADMIN")
+        void should_ReturnBadRequest_When_EmailFormatIsInvalid() throws Exception {
+            String invalidEmail = "not-an-email.com";
+
+            mockMvc.perform(get("/consumers/email/{email}", invalidEmail))
+                    .andExpect(status().isBadRequest())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.VALIDATION_ERROR.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.VALIDATION_ERROR.getDefaultMessage())))
+                    .andExpect(jsonPath("$.error.details", containsString("O e-mail deve ser válido")));
+        }
+
+        @Test
+        @DisplayName("Should return 404 - Not Found when ADMIN requests non-existent email")
+        @WithMockUser(roles = "ADMIN")
+        void should_ReturnResourceNotFound_When_EmailNotFound() throws Exception {
+            String nonExistentEmail = "notfound@email.com";
+
+            mockMvc.perform(get("/consumers/email/{email}", nonExistentEmail))
+                    .andExpect(status().isNotFound())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.RESOURCE_NOT_FOUND.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.RESOURCE_NOT_FOUND.getDefaultMessage())))
+                    .andExpect(jsonPath("$.error.details", is("Cliente não encontrado")));
+        }
+
+        @Test
+        @DisplayName("Should return 200 - OK and Consumer data when ADMIN requests existing email")
+        @WithMockUser(roles = "ADMIN")
+        void should_ReturnOk_When_AdminRequestsExistingEmail() throws Exception {
+            mockMvc.perform(get("/consumers/email/{email}", consumerA.getEmail()))
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.success", is(true)))
+
+                    .andExpect(jsonPath("$.data.id", is(consumerA.getId().toString())))
+                    .andExpect(jsonPath("$.data.name", is(consumerA.getName())))
+                    .andExpect(jsonPath("$.data.email", is(consumerA.getEmail())));
+        }
+    }
 }
