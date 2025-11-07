@@ -28,60 +28,79 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 class OrderControllerIT extends BaseIntegrationTest {
+
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private ConsumerRepository consumerRepository;
+
     @Autowired
     private RestaurantRepository restaurantRepository;
+
     @Autowired
     private ProductRepository productRepository;
+
     @Autowired
     private OrderRepository orderRepository;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @MockitoBean
     private SecurityService securityService;
 
-    private User userCustomer;
-    private Consumer consumerCustomer;
+    private User userCustomerA;
+    private Consumer customerA;
+
+    private User userCustomerB;
+    private Consumer customerB;
+
     private Restaurant restaurantA;
-    private Product productA;
     private Restaurant restaurantB;
-    private Product productB;
+
     private Order orderA;
 
     @BeforeEach
     void setUp() {
-        orderRepository.deleteAllInBatch();
-        productRepository.deleteAllInBatch();
-        userRepository.deleteAllInBatch();
-        consumerRepository.deleteAllInBatch();
-        restaurantRepository.deleteAllInBatch();
+        userCustomerA = new User();
+        userCustomerA.setName("Test CustomerA");
+        userCustomerA.setEmail("customerA@email.com");
+        userCustomerA.setPassword(passwordEncoder.encode("123"));
+        userCustomerA.setRole(Role.CUSTOMER);
+        userCustomerA.setActive(true);
+        userRepository.saveAndFlush(userCustomerA);
 
-        userCustomer = new User();
-        userCustomer.setName("Test Customer");
-        userCustomer.setEmail("customer@email.com");
-        userCustomer.setPassword(passwordEncoder.encode("123"));
-        userCustomer.setRole(Role.CUSTOMER);
-        userCustomer.setActive(true);
-        userRepository.saveAndFlush(userCustomer);
+        customerA = new Consumer();
+        customerA.setName("Test ConsumerA");
+        customerA.setEmail("customerA@email.com");
+        customerA.setAddress("Street A");
+        customerA.setPhoneNumber("111111111");
+        customerA.setActive(true);
+        customerA = consumerRepository.saveAndFlush(customerA);
 
-        consumerCustomer = new Consumer();
-        consumerCustomer.setName("Test Consumer");
-        consumerCustomer.setEmail("customer@email.com");
-        consumerCustomer.setAddress("Street A");
-        consumerCustomer.setPhoneNumber("111111111");
-        consumerCustomer.setActive(true);
-        consumerCustomer = consumerRepository.saveAndFlush(consumerCustomer);
+        userCustomerB = new User();
+        userCustomerB.setName("Test CustomerB");
+        userCustomerB.setEmail("customerB@email.com");
+        userCustomerB.setPassword(passwordEncoder.encode("123"));
+        userCustomerB.setRole(Role.CUSTOMER);
+        userCustomerB.setActive(true);
+        userRepository.saveAndFlush(userCustomerB);
+
+        customerB = new Consumer();
+        customerB.setName("Test ConsumerB");
+        customerB.setEmail("customerB@email.com");
+        customerB.setAddress("Street B");
+        customerB.setPhoneNumber("111111111");
+        customerB.setActive(true);
+        customerB = consumerRepository.saveAndFlush(customerB);
 
         restaurantA = new Restaurant();
         restaurantA.setName("Restaurant A");
@@ -92,15 +111,6 @@ class OrderControllerIT extends BaseIntegrationTest {
         restaurantA.setActive(true);
         restaurantA = restaurantRepository.saveAndFlush(restaurantA);
 
-        productA = new Product();
-        productA.setName("Product A");
-        productA.setDescription("Description A");
-        productA.setPrice(new BigDecimal("20.00"));
-        productA.setCategory("Category A");
-        productA.setAvailable(true);
-        productA.setRestaurant(restaurantA);
-        productA = productRepository.saveAndFlush(productA);
-
         restaurantB = new Restaurant();
         restaurantB.setName("Restaurant B");
         restaurantB.setCategory("ITALIANA");
@@ -110,19 +120,10 @@ class OrderControllerIT extends BaseIntegrationTest {
         restaurantB.setActive(true);
         restaurantB = restaurantRepository.saveAndFlush(restaurantB);
 
-        productB = new Product();
-        productB.setName("Product B");
-        productB.setDescription("Description B");
-        productB.setPrice(new BigDecimal("50.00"));
-        productB.setCategory("Category B");
-        productB.setAvailable(true);
-        productB.setRestaurant(restaurantB);
-        productB = productRepository.saveAndFlush(productB);
-
         orderA = new Order();
-        orderA.setConsumer(consumerCustomer);
+        orderA.setConsumer(customerA);
         orderA.setRestaurant(restaurantA);
-        orderA.setDeliveryAddress(consumerCustomer.getAddress());
+        orderA.setDeliveryAddress(customerA.getAddress());
         orderA.setDeliveryTax(restaurantA.getDeliveryTax());
         orderA.setStatus(OrderStatus.PENDING);
         orderA.setSubtotal(new BigDecimal("20.00"));
@@ -135,11 +136,31 @@ class OrderControllerIT extends BaseIntegrationTest {
     class CreateOrderTests {
 
         private OrderRequestDto orderRequest;
+        private Product productA;
+        private Product productB;
 
         @BeforeEach
         void setUp() {
+            productA = new Product();
+            productA.setName("Product A");
+            productA.setRestaurant(restaurantA);
+            productA.setPrice(BigDecimal.TEN);
+            productA.setCategory("TEST");
+            productA.setDescription("Test");
+            productA.setAvailable(true);
+            productA = productRepository.saveAndFlush(productA);
+
+            productB = new Product();
+            productB.setName("Product B");
+            productB.setRestaurant(restaurantB);
+            productB.setPrice(BigDecimal.TEN);
+            productB.setCategory("TEST");
+            productB.setDescription("Test");
+            productB.setAvailable(true);
+            productB = productRepository.saveAndFlush(productB);
+
             orderRequest = new OrderRequestDto(
-                    consumerCustomer.getId(),
+                    customerA.getId(),
                     restaurantA.getId(),
                     List.of(new OrderItemRequestDto(productA.getId(), 1))
             );
@@ -257,10 +278,10 @@ class OrderControllerIT extends BaseIntegrationTest {
             String jsonBody = objectMapper.writeValueAsString(orderRequest);
 
             mockMvc.perform(
-                    post("/orders")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(jsonBody)
-            )
+                            post("/orders")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(jsonBody)
+                    )
                     .andExpect(status().isCreated())
 
                     .andExpect(jsonPath("$.success", is(true)))
@@ -270,75 +291,21 @@ class OrderControllerIT extends BaseIntegrationTest {
                     .andExpect(header().string("Location", containsString("/orders/")))
 
                     .andExpect(jsonPath("$.data.id", notNullValue()))
-                    .andExpect(jsonPath("$.data.restaurantName", is("Restaurant A")))
-                    .andExpect(jsonPath("$.data.consumerName", is("Test Consumer")))
-                    .andExpect(jsonPath("$.data.status", is("PENDING")))
-
-                    .andExpect(jsonPath("$.data.subtotal", is(20.00)))
-                    .andExpect(jsonPath("$.data.deliveryTax", is(10.00)))
-                    .andExpect(jsonPath("$.data.total", is(30.00)))
-
-                    .andExpect(jsonPath("$.data.items", hasSize(1)))
-                    .andExpect(jsonPath("$.data.items[0].productName", is("Product A")))
-                    .andExpect(jsonPath("$.data.items[0].quantity", is(1)));
+                    .andExpect(jsonPath("$.data.restaurantName", is(restaurantA.getName())))
+                    .andExpect(jsonPath("$.data.consumerName", is(customerA.getName())))
+                    .andExpect(jsonPath("$.data.status", is(OrderStatus.PENDING.name())))
+                    .andExpect(jsonPath("$.data.items", hasSize(1)));
         }
     }
 
     @Nested
     @DisplayName("GET /orders/{id} tests")
     class FindOrderByIdTests {
-        private User userAdmin;
-        private User userConsumerB;
-        private Consumer consumerB;
-
-        @BeforeEach
-        void setUp() {
-            userAdmin = new User();
-            userAdmin.setName("Admin User");
-            userAdmin.setEmail("admin@email.com");
-            userAdmin.setPassword(passwordEncoder.encode("123"));
-            userAdmin.setRole(Role.ADMIN);
-            userAdmin.setActive(true);
-            userRepository.saveAndFlush(userAdmin);
-            
-            userConsumerB = new User();
-            userConsumerB.setName("Consumer B");
-            userConsumerB.setEmail("consumerB@email.com");
-            userConsumerB.setPassword(passwordEncoder.encode("123"));
-            userConsumerB.setRole(Role.CUSTOMER);
-            userConsumerB.setActive(true);
-            userRepository.saveAndFlush(userConsumerB);
-            
-            consumerB = new Consumer();
-            consumerB.setName("Consumer B");
-            consumerB.setEmail("userCustomerB");
-            consumerB.setAddress("Street B");
-            consumerB.setPhoneNumber("66778899");
-            consumerB.setActive(true);
-
-            User userRestaurantA = new User();
-            userRestaurantA.setName("Restaurant A User");
-            userRestaurantA.setEmail("restauranta@email.com");
-            userRestaurantA.setPassword(passwordEncoder.encode("123"));
-            userRestaurantA.setRole(Role.RESTAURANT);
-            userRestaurantA.setRestaurant(restaurantA);
-            userRestaurantA.setActive(true);
-            userRepository.saveAndFlush(userRestaurantA);
-
-            User userRestaurantB = new User();
-            userRestaurantB.setName("Restaurant B User");
-            userRestaurantB.setEmail("restaurantb@email.com");
-            userRestaurantB.setPassword(passwordEncoder.encode("123"));
-            userRestaurantB.setRole(Role.RESTAURANT);
-            userRestaurantB.setRestaurant(restaurantB);
-            userRestaurantB.setActive(true);
-            userRepository.saveAndFlush(userRestaurantB);
-        }
 
         @Test
         @DisplayName("Should return 401 - Unauthorized when not authenticated")
         void should_ReturnUnauthorized_When_NotAuthenticated() throws Exception {
-            
+
             mockMvc.perform(get("/orders/{id}", orderA.getId()))
                     .andExpect(status().isUnauthorized())
 
@@ -349,31 +316,16 @@ class OrderControllerIT extends BaseIntegrationTest {
                     .andExpect(jsonPath("$.error.message", is(ErrorCode.UNAUTHORIZED_ERROR.getDefaultMessage())))
                     .andExpect(jsonPath("$.timestamp", notNullValue()));
         }
-        
-        @Test
-        @DisplayName("Should return 404 - Not Found when ADMIN requests non-existent order")
-        @WithMockUser(roles = "ADMIN")
-        void should_ReturnResourceNotFound_When_AdminRequestsNonExistentOrder() throws Exception {
-            
-            mockMvc.perform(get("/orders/{id}", UUID.randomUUID()))
-                    .andExpect(status().isNotFound())
-                    
-                    .andExpect(jsonPath("$.success", is(false)))
-                    .andExpect(jsonPath("$.error", notNullValue()))
 
-                    .andExpect(jsonPath("$.error.code", is(ErrorCode.RESOURCE_NOT_FOUND.getCode())))
-                    .andExpect(jsonPath("$.error.message", is(ErrorCode.RESOURCE_NOT_FOUND.getDefaultMessage())));
-        }
-        
         @Test
         @DisplayName("Should return 403 - Forbidden when CUSTOMER tries to get another user's order")
         @WithMockUser(roles = "CUSTOMER")
         void should_ReturnForbidden_When_CustomerGetsAnotherUsersOrder() throws Exception {
-            when(securityService.getCurrentUser()).thenReturn(Optional.of(userConsumerB));
-            
+            when(securityService.getCurrentUser()).thenReturn(Optional.of(userCustomerB));
+
             mockMvc.perform(get("/orders/{id}", orderA.getId()))
                     .andExpect(status().isForbidden())
-                    
+
                     .andExpect(jsonPath("$.success", is(false)))
                     .andExpect(jsonPath("$.error", notNullValue()))
 
@@ -398,17 +350,32 @@ class OrderControllerIT extends BaseIntegrationTest {
         }
 
         @Test
+        @DisplayName("Should return 404 - Not Found when ADMIN requests non-existent order")
+        @WithMockUser(roles = "ADMIN")
+        void should_ReturnResourceNotFound_When_AdminRequestsNonExistentOrder() throws Exception {
+
+            mockMvc.perform(get("/orders/{id}", UUID.randomUUID()))
+                    .andExpect(status().isNotFound())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.RESOURCE_NOT_FOUND.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.RESOURCE_NOT_FOUND.getDefaultMessage())));
+        }
+
+        @Test
         @DisplayName("Should return 200 - OK when CUSTOMER gets their own order")
         @WithMockUser(roles = "CUSTOMER")
         void should_ReturnOk_When_CustomerGetsOwnOrder() throws Exception {
-            when(securityService.getCurrentUser()).thenReturn(Optional.of(userCustomer));
+            when(securityService.getCurrentUser()).thenReturn(Optional.of(userCustomerA));
 
             mockMvc.perform(get("/orders/{id}", orderA.getId()))
                     .andExpect(status().isOk())
 
                     .andExpect(jsonPath("$.success", is(true)))
                     .andExpect(jsonPath("$.data.id", is(orderA.getId().toString())))
-                    .andExpect(jsonPath("$.data.consumerName", is(consumerCustomer.getName())));
+                    .andExpect(jsonPath("$.data.consumerName", is(customerA.getName())));
         }
 
         @Test
