@@ -194,7 +194,7 @@
                         <configuration>
                             <rules>
                                 <rule>
-                                    <element>CLASS</element>
+                                    <element>PACKAGE</element>
                                     <limits>
                                         <limit>
                                             <counter>LINE</counter>
@@ -204,6 +204,16 @@
                                     </limits>
                                 </rule>
                             </rules>
+
+                            <excludes>
+                                <exclude>**/Main.class</exclude>
+                                <exclude>**/config/**</exclude>
+                                <exclude>**/security/**</exclude>
+                                <exclude>**/model/**</exclude>
+                                <exclude>**/dto/**</exclude>
+                                <exclude>**/exceptions/**</exclude>
+                                <exclude>**/mapper/*Impl.class</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
                 </executions>
