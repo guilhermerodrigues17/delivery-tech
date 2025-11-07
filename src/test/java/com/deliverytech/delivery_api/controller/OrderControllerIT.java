@@ -21,6 +21,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -572,6 +574,487 @@ class OrderControllerIT extends BaseIntegrationTest {
 
             Order updatedOrder = orderRepository.findById(orderA.getId()).get();
             assertEquals(OrderStatus.PREPARING, updatedOrder.getStatus());
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /orders (search) tests")
+    class SearchOrdersTests {
+
+        private Order orderB;
+        private Order orderC;
+        private LocalDate today;
+
+        @BeforeEach
+        void setUp() {
+            today = LocalDate.now();
+
+            orderB = new Order();
+            orderB.setDeliveryAddress(customerA.getAddress());
+            orderB.setSubtotal(BigDecimal.TEN);
+            orderB.setDeliveryTax(BigDecimal.TEN);
+            orderB.setTotal(BigDecimal.TEN);
+            orderB.setStatus(OrderStatus.PENDING);
+            orderB.setConsumer(customerA);
+            orderB.setRestaurant(restaurantA);
+
+            orderC = new Order();
+            orderC.setDeliveryAddress(customerA.getAddress());
+            orderC.setSubtotal(BigDecimal.TEN);
+            orderC.setDeliveryTax(BigDecimal.TEN);
+            orderC.setTotal(BigDecimal.TEN);
+            orderC.setStatus(OrderStatus.DELIVERED);
+            orderC.setConsumer(customerA);
+            orderC.setRestaurant(restaurantA);
+
+            orderRepository.saveAllAndFlush(List.of(orderB, orderC));
+        }
+
+        @Test
+        @DisplayName("Should return 401 - Unauthorized when not authenticated")
+        void should_ReturnUnauthorized_When_NotAuthenticated() throws Exception {
+
+            mockMvc.perform(get("/orders"))
+                    .andExpect(status().isUnauthorized())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.UNAUTHORIZED_ERROR.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.UNAUTHORIZED_ERROR.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 403 Forbidden when authenticated as CUSTOMER")
+        @WithMockUser(roles = "CUSTOMER")
+        void should_ReturnForbidden_When_RoleIsCustomer() throws Exception {
+
+            mockMvc.perform(get("/orders"))
+                    .andExpect(status().isForbidden())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.FORBIDDEN_ACCESS.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.FORBIDDEN_ACCESS.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 400 - Bad Request when 'status' is invalid")
+        @WithMockUser(roles = "ADMIN")
+        void should_ReturnBadRequest_When_StatusIsInvalid() throws Exception {
+
+            mockMvc.perform(
+                            get("/orders")
+                                    .param("status", "INVALID_STATUS")
+                    )
+                    .andExpect(status().isBadRequest())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.BAD_REQUEST.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.BAD_REQUEST.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 400 - Bad Request when 'startDate' format is invalid")
+        @WithMockUser(username = "admin@email.com", roles = "ADMIN")
+        void should_ReturnBadRequest_When_DateFormatIsInvalid() throws Exception {
+
+            mockMvc.perform(
+                            get("/orders")
+                                    .param("startDate", "01-01-2025")
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.BAD_REQUEST.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.BAD_REQUEST.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 200 - OK with all orders when no filters provided")
+        @WithMockUser(roles = "ADMIN")
+        void should_ReturnOk_WithAllOrders_When_NoFilters() throws Exception {
+
+            mockMvc.perform(
+                            get("/orders")
+                                    .param("page", "0")
+                                    .param("size", "5")
+                    )
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.page.totalElements", is(3)))
+                    .andExpect(jsonPath("$.content", hasSize(3)));
+        }
+
+        @Test
+        @DisplayName("Should return 200 - OK filtered by status")
+        @WithMockUser(roles = "ADMIN")
+        void should_ReturnOk_When_FilteredByStatus() throws Exception {
+
+            mockMvc.perform(
+                            get("/orders")
+                                    .param("status", "DELIVERED")
+                                    .param("page", "0")
+                                    .param("size", "5")
+                    )
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.page.totalElements", is(1)))
+                    .andExpect(jsonPath("$.content[?(@.status == 'DELIVERED')]", hasSize(1)));
+        }
+
+        @Test
+        @DisplayName("Should return 200 - OK filtered by date range")
+        @WithMockUser(roles = "ADMIN")
+        void should_ReturnOk_When_FilteredByDate() throws Exception {
+
+            mockMvc.perform(
+                            get("/orders")
+                                    .param("startDate", today.format(DateTimeFormatter.ISO_DATE))
+                                    .param("endDate", today.format(DateTimeFormatter.ISO_DATE))
+                                    .param("page", "0")
+                                    .param("size", "5")
+                    )
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.page.totalElements", is(3)))
+                    .andExpect(jsonPath("$.content", hasSize(3)));
+        }
+
+        @Test
+        @DisplayName("Should return 200 - OK filtered by date AND status")
+        @WithMockUser(roles = "ADMIN")
+        void should_ReturnOk_When_FilteredByDateAndStatus() throws Exception {
+
+            mockMvc.perform(
+                            get("/orders")
+                                    .param("startDate", today.format(DateTimeFormatter.ISO_DATE))
+                                    .param("endDate", today.format(DateTimeFormatter.ISO_DATE))
+                                    .param("status", "DELIVERED")
+                                    .param("page", "0")
+                                    .param("size", "5")
+                    )
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.page.totalElements", is(1)))
+                    .andExpect(jsonPath("$.content[0].id", is(orderC.getId().toString())));
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /orders/calculate tests")
+    class CalculateOrderTotalTests {
+
+        private Product productA;
+        private Product productB;
+        private OrderRequestDto dto;
+
+        @BeforeEach
+        void setUp() {
+            productA = new Product();
+            productA.setName("Product A");
+            productA.setRestaurant(restaurantA);
+            productA.setPrice(new BigDecimal("10.00"));
+            productA.setCategory("TEST");
+            productA.setDescription("Test");
+            productA.setAvailable(true);
+            productA = productRepository.saveAndFlush(productA);
+
+            productB = new Product();
+            productB.setName("Product B");
+            productB.setRestaurant(restaurantB);
+            productB.setPrice(new BigDecimal("10.00"));
+            productB.setCategory("TEST");
+            productB.setDescription("Test");
+            productB.setAvailable(true);
+            productB = productRepository.saveAndFlush(productB);
+
+            dto = new OrderRequestDto(customerA.getId(), restaurantA.getId(), List.of(
+                    new OrderItemRequestDto(productA.getId(), 1)
+            ));
+        }
+
+        @Test
+        @DisplayName("Should return 401 - Unauthorized when not authenticated")
+        void should_ReturnUnauthorized_When_NotAuthenticated() throws Exception {
+            String jsonBody = objectMapper.writeValueAsString(dto);
+
+            mockMvc.perform(
+                            post("/orders/calculate")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(jsonBody)
+                    )
+                    .andExpect(status().isUnauthorized())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.UNAUTHORIZED_ERROR.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.UNAUTHORIZED_ERROR.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 403 - Forbidden when authenticated as ADMIN")
+        @WithMockUser(roles = "ADMIN")
+        void should_ReturnForbidden_When_RoleIsAdmin() throws Exception {
+            String jsonBody = objectMapper.writeValueAsString(dto);
+
+            mockMvc.perform(
+                            post("/orders/calculate")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(jsonBody)
+                    )
+                    .andExpect(status().isForbidden())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.FORBIDDEN_ACCESS.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.FORBIDDEN_ACCESS.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 400 - Bad Request when DTO is invalid")
+        @WithMockUser(roles = "CUSTOMER")
+        void should_ReturnBadRequest_When_DtoIsInvalid() throws Exception {
+            dto.setRestaurantId(null);
+            String jsonBody = objectMapper.writeValueAsString(dto);
+
+            mockMvc.perform(post("/orders/calculate")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(jsonBody))
+                    .andExpect(status().isBadRequest())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.VALIDATION_ERROR.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.VALIDATION_ERROR.getDefaultMessage())))
+                    .andExpect(jsonPath("$.error.details", containsString("O ID do restaurante é obrigatório")));
+        }
+
+        @Test
+        @DisplayName("Should return 404 - Not Found when restaurantId does not exist")
+        @WithMockUser(roles = "CUSTOMER")
+        void should_ReturnResourceNotFound_When_RestaurantIdDoesNotExist() throws Exception {
+            dto.setRestaurantId(UUID.randomUUID());
+            String jsonBody = objectMapper.writeValueAsString(dto);
+
+            mockMvc.perform(
+                            post("/orders/calculate")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(jsonBody)
+                    )
+                    .andExpect(status().isNotFound())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.RESOURCE_NOT_FOUND.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.RESOURCE_NOT_FOUND.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 404 - Not Found when a productId does not exist")
+        @WithMockUser(roles = "CUSTOMER")
+        void should_ReturnResourceNotFound_When_ProductIdDoesNotExist() throws Exception {
+            dto.setItems(List.of(new OrderItemRequestDto(UUID.randomUUID(), 1)));
+            String jsonBody = objectMapper.writeValueAsString(dto);
+
+            mockMvc.perform(
+                            post("/orders/calculate")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(jsonBody)
+                    )
+                    .andExpect(status().isNotFound())
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.RESOURCE_NOT_FOUND.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.RESOURCE_NOT_FOUND.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 422 - Unprocessable Entity when product does not belong to restaurant")
+        @WithMockUser(roles = "CUSTOMER")
+        void should_ReturnUnprocessableEntity_When_ProductDoesNotBelongToRestaurant() throws Exception {
+            dto.setItems(List.of(new OrderItemRequestDto(productB.getId(), 1)));
+            String jsonBody = objectMapper.writeValueAsString(dto);
+
+            mockMvc.perform(
+                            post("/orders/calculate")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(jsonBody)
+                    )
+                    .andExpect(status().isUnprocessableEntity())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.UNPROCESSABLE_ENTITY.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.UNPROCESSABLE_ENTITY.getDefaultMessage())))
+                    .andExpect(jsonPath("$.error.details", containsString("não pertence ao restaurante informado")));
+        }
+
+        @Test
+        @DisplayName("Should return 200 - OK with correct totals when data is valid")
+        @WithMockUser(roles = "CUSTOMER")
+        void should_ReturnOk_WithCorrectTotals() throws Exception {
+            String jsonBody = objectMapper.writeValueAsString(dto);
+
+            mockMvc.perform(
+                            post("/orders/calculate")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(jsonBody)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success", is(true)))
+
+                    .andExpect(jsonPath("$.data.subtotal", is(10.00)))
+                    .andExpect(jsonPath("$.data.deliveryTax", is(10.00)))
+                    .andExpect(jsonPath("$.data.total", is(20.00)));
+        }
+    }
+
+    @Nested
+    @DisplayName("DELETE /orders/{id} tests")
+    class CancelOrderTests {
+
+        private Order orderDelivered;
+
+        @BeforeEach
+        void setUp() {
+            orderDelivered = new Order();
+            orderDelivered.setDeliveryAddress(customerA.getAddress());
+            orderDelivered.setSubtotal(BigDecimal.TEN);
+            orderDelivered.setDeliveryTax(BigDecimal.TEN);
+            orderDelivered.setTotal(BigDecimal.TEN);
+            orderDelivered.setStatus(OrderStatus.DELIVERED);
+            orderDelivered.setConsumer(customerA);
+            orderDelivered.setRestaurant(restaurantA);
+
+            orderRepository.saveAndFlush(orderDelivered);
+        }
+
+        @Test
+        @DisplayName("Should return 401 - Unauthorized when not authenticated")
+        void should_ReturnUnauthorized_When_NotAuthenticated() throws Exception {
+
+            mockMvc.perform(delete("/orders/{id}", orderA.getId()))
+                    .andExpect(status().isUnauthorized())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.UNAUTHORIZED_ERROR.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.UNAUTHORIZED_ERROR.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 403 - Forbidden when authenticated as RESTAURANT")
+        @WithMockUser(roles = "RESTAURANT")
+        void should_ReturnForbidden_When_RoleIsRestaurant() throws Exception {
+
+            mockMvc.perform(delete("/orders/{id}", orderA.getId()))
+                    .andExpect(status().isForbidden())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.FORBIDDEN_ACCESS.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.FORBIDDEN_ACCESS.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 403 - Forbidden when CUSTOMER is not the owner")
+        @WithMockUser(roles = "CUSTOMER")
+        void should_ReturnForbidden_When_CustomerIsNotOwner() throws Exception {
+            when(securityService.getCurrentUser()).thenReturn(Optional.of(userCustomerB));
+
+            mockMvc.perform(delete("/orders/{id}", orderA.getId()))
+                    .andExpect(status().isForbidden())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.FORBIDDEN_ACCESS.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.FORBIDDEN_ACCESS.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 400 - Bad Request when ID is not a valid UUID")
+        @WithMockUser(roles = "ADMIN")
+        void should_ReturnBadRequest_When_IdIsInvalidUUID() throws Exception {
+
+            mockMvc.perform(delete("/orders/{id}", "not-a-uuid"))
+                    .andExpect(status().isBadRequest())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.BAD_REQUEST.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.BAD_REQUEST.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 404 - Not Found when ADMIN deletes non-existent order")
+        @WithMockUser(roles = "ADMIN")
+        void should_ReturnResourceNotFound_When_IdDoesNotExist() throws Exception {
+
+            mockMvc.perform(delete("/orders/{id}", UUID.randomUUID()))
+                    .andExpect(status().isNotFound())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                .andExpect(jsonPath("$.error.code", is(ErrorCode.RESOURCE_NOT_FOUND.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.RESOURCE_NOT_FOUND.getDefaultMessage())));
+        }
+
+        @Test
+        @DisplayName("Should return 422 - Unprocessable Entity when order status is not cancellable")
+        @WithMockUser(roles = "ADMIN")
+        void should_Return422_When_OrderStatusIsNotCancellable() throws Exception {
+            assertSame(OrderStatus.DELIVERED, orderDelivered.getStatus());
+
+            mockMvc.perform(delete("/orders/{id}", orderDelivered.getId()))
+                    .andExpect(status().isUnprocessableEntity())
+
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", notNullValue()))
+
+                    .andExpect(jsonPath("$.error.code", is(ErrorCode.UNPROCESSABLE_ENTITY.getCode())))
+                    .andExpect(jsonPath("$.error.message", is(ErrorCode.UNPROCESSABLE_ENTITY.getDefaultMessage())))
+                    .andExpect(jsonPath("$.error.details", is("Não é possível cancelar o pedido com status 'DELIVERED'.")));
+        }
+
+        @Test
+        @DisplayName("Should return 204 - No Content when CUSTOMER owner cancels order")
+        @WithMockUser(roles = "CUSTOMER")
+        void should_ReturnNoContent_When_CustomerIsOwner() throws Exception {
+            assertSame(OrderStatus.PENDING, orderA.getStatus());
+            when(securityService.getCurrentUser()).thenReturn(Optional.of(userCustomerA));
+
+            mockMvc.perform(delete("/orders/{id}", orderA.getId()))
+                    .andExpect(status().isNoContent());
+
+            Order cancelledOrder = orderRepository.findById(orderA.getId()).get();
+            assertEquals(OrderStatus.CANCELED, cancelledOrder.getStatus());
+        }
+
+        @Test
+        @DisplayName("Should return 204 - No Content when ADMIN cancels order")
+        @WithMockUser(roles = "ADMIN")
+        void should_ReturnNoContent_When_AdminCancelsOrder() throws Exception {
+            assertSame(OrderStatus.PENDING, orderA.getStatus());
+
+            mockMvc.perform(delete("/orders/{id}", orderA.getId()))
+                    .andExpect(status().isNoContent());
+
+            Order cancelledOrder = orderRepository.findById(orderA.getId()).get();
+            assertEquals(OrderStatus.CANCELED, cancelledOrder.getStatus());
         }
     }
 }
