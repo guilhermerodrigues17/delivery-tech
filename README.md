@@ -117,6 +117,36 @@ cd delivery-tech
 Após a inicialização, a aplicação estará disponível em `http://localhost:8080`
 por padrão.
 
+## 🧪 Testes e Qualidade
+
+Para garantir a qualidade e a estabilidade da aplicação, o projeto é configurado com um conjunto robusto de testes unitários e de integração.
+
+### Executando os testes
+
+Os testes de integração (arquivos `*IT.java`) dependem de um segredo JWT fictício para simular a autenticação. 
+Ao executar os testes, é **necessário** configurar a variável ``JWT_SECRET``.
+```bash
+
+# Executa todos os testes
+JWT_SECRET={YOUR_JWT_SECRET_HERE} ./mvnw clean test
+
+```
+
+### Verificando cobertura de testes (JaCoCo)
+O projeto está configurado com o JaCoCo para analisar a cobertura de testes. 
+Nossa meta de qualidade exige pelo menos **80%** de cobertura de linhas na camada de serviços e controle (``service.impl`` e ``controller``).
+
+Para rodar os testes e verificar a cobertura, utilize o comando verify. Este comando irá falhar a build 
+(``BUILD FAILURE``) se a meta de cobertura não for atingida.
+
+```bash
+
+# Executa os testes e verifica a cobertura
+JWT_SECRET={YOUR_JWT_SECRET_HERE} ./mvnw clean verify
+
+```
+Após a execução (mesmo que falhe), você pode visualizar o relatório HTML completo no seu navegador, abrindo o seguinte arquivo:
+[`/target/site/jacoco/index.html`](/target/site/jacoco/index.html)
 ## 📚 Documentação da API (Swagger UI)
 
 Para facilitar o desenvolvimento e a integração, a API está 100% documentada usando o padrão OpenAPI.
