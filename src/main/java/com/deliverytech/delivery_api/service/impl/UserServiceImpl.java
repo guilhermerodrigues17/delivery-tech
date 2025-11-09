@@ -15,6 +15,9 @@ import com.deliverytech.delivery_api.service.RestaurantService;
 import com.deliverytech.delivery_api.service.UserService;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -32,6 +35,8 @@ public class UserServiceImpl implements UserService {
     private final RestaurantService restaurantService;
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
+
+    private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT");
 
     @Timed("delivery_api.users.register.timer")
     public RegisterResponseDto createUser(RegisterUserRequestDto dto) {
@@ -53,6 +58,14 @@ public class UserServiceImpl implements UserService {
         }
 
         var created = userRepository.save(userEntity);
+
+        var currentUser = "ANONYMOUS";
+        auditLogger.info("CRUD_EVENT; type=CREATE; entity=User; entityId={}; user={}; correlationId={}",
+                created.getId(),
+                currentUser,
+                MDC.get("correlationId")
+        );
+
         return new RegisterResponseDto(created.getId(), created.getName(), created.getEmail(), created.getRole());
     }
 

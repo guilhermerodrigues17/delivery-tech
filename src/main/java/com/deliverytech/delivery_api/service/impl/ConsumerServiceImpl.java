@@ -12,6 +12,9 @@ import com.deliverytech.delivery_api.security.SecurityService;
 import com.deliverytech.delivery_api.service.ConsumerService;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,8 @@ public class ConsumerServiceImpl implements ConsumerService {
     private final ConsumerRepository consumerRepository;
     private final ConsumerMapper mapper;
     private final SecurityService securityService;
+
+    private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT");
 
     @Timed("delivery_api.consumers.creation.timer")
     public ConsumerResponseDto create(ConsumerRequestDto dto) {
@@ -44,6 +49,19 @@ public class ConsumerServiceImpl implements ConsumerService {
         }
 
         var savedConsumer = consumerRepository.save(consumerEntity);
+
+        var currentUserOpt = securityService.getCurrentUser();
+        String currentUser = "ANONYMOUS";
+        if (currentUserOpt.isPresent()) {
+            currentUser = currentUserOpt.get().getEmail();
+        }
+
+        auditLogger.info("CRUD_EVENT; type=CREATE; entity=Consumer; entityId={}; user={}; correlationId={}",
+                savedConsumer.getId(),
+                currentUser,
+                MDC.get("correlationId")
+        );
+
         return mapper.toDto(savedConsumer);
     }
 
@@ -95,6 +113,19 @@ public class ConsumerServiceImpl implements ConsumerService {
         }
 
         var updatedConsumer = consumerRepository.save(existingConsumer);
+
+        var currentUserOpt = securityService.getCurrentUser();
+        String currentUser = "ANONYMOUS";
+        if (currentUserOpt.isPresent()) {
+            currentUser = currentUserOpt.get().getEmail();
+        }
+
+        auditLogger.info("CRUD_EVENT; type=UPDATE; entity=Consumer; entityId={}; user={}; correlationId={}",
+                updatedConsumer.getId(),
+                currentUser,
+                MDC.get("correlationId")
+        );
+
         return mapper.toDto(updatedConsumer);
     }
 
@@ -103,6 +134,19 @@ public class ConsumerServiceImpl implements ConsumerService {
         existingConsumer.setActive(false);
 
         consumerRepository.save(existingConsumer);
+
+        var currentUserOpt = securityService.getCurrentUser();
+        String currentUser = "ANONYMOUS";
+        if (currentUserOpt.isPresent()) {
+            currentUser = currentUserOpt.get().getEmail();
+        }
+
+        auditLogger.info("CRUD_EVENT; type=DELETE; entity=Consumer; entityId={}; user={}; correlationId={}",
+                existingConsumer.getId(),
+                currentUser,
+                MDC.get("correlationId")
+        );
+
     }
 
     public boolean isOwnerByEmail(String consumerId) {

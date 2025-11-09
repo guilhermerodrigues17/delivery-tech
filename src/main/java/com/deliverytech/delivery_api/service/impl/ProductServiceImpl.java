@@ -13,6 +13,9 @@ import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
@@ -33,6 +36,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
     private final SecurityService securityService;
 
+    private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT");
+
     @Transactional
     @Timed("delivery_api.products.creation.timer")
     public ProductResponseDto createProduct(ProductRequestDto dto) {
@@ -42,6 +47,20 @@ public class ProductServiceImpl implements ProductService {
         product.setRestaurant(restaurant);
 
         var saved = productRepository.save(product);
+
+        var currentUserOpt = securityService.getCurrentUser();
+        String currentUser = "ANONYMOUS";
+        if (currentUserOpt.isPresent()) {
+            currentUser = currentUserOpt.get().getEmail();
+        }
+
+        auditLogger.info("CRUD_EVENT; type=CREATE; entity=Product; entityId={}; user={}; correlationId={}",
+                saved.getId(),
+                currentUser,
+                MDC.get("correlationId")
+        );
+
+
         return productMapper.toResponseDto(saved);
     }
 
@@ -99,6 +118,18 @@ public class ProductServiceImpl implements ProductService {
 
         var response = productRepository.save(product);
 
+        var currentUserOpt = securityService.getCurrentUser();
+        String currentUser = "ANONYMOUS";
+        if (currentUserOpt.isPresent()) {
+            currentUser = currentUserOpt.get().getEmail();
+        }
+
+        auditLogger.info("CRUD_EVENT; type=UPDATE; entity=Product; entityId={}; user={}; correlationId={}",
+                response.getId(),
+                currentUser,
+                MDC.get("correlationId")
+        );
+
         return productMapper.toResponseDto(response);
     }
 
@@ -106,6 +137,18 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(String id) {
         var product = findProductEntityById(id);
         productRepository.delete(product);
+
+        var currentUserOpt = securityService.getCurrentUser();
+        String currentUser = "ANONYMOUS";
+        if (currentUserOpt.isPresent()) {
+            currentUser = currentUserOpt.get().getEmail();
+        }
+
+        auditLogger.info("CRUD_EVENT; type=DELETE; entity=Product; entityId={}; user={}; correlationId={}",
+                product.getId(),
+                currentUser,
+                MDC.get("correlationId")
+        );
     }
 
     public void toggleAvailability(String id) {

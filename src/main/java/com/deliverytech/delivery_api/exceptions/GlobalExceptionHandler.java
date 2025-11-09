@@ -2,8 +2,13 @@ package com.deliverytech.delivery_api.exceptions;
 
 import com.deliverytech.delivery_api.dto.response.errors.ErrorResponse;
 import com.deliverytech.delivery_api.model.enums.ErrorCode;
+import com.deliverytech.delivery_api.security.SecurityService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -20,7 +25,11 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import java.util.stream.Collectors;
 
 @ControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final SecurityService securityService;
+    private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT");
 
     @ExceptionHandler(ResourceNotFoundException.class)
     private ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
@@ -140,6 +149,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
+        var currentUserOpt = securityService.getCurrentUser();
+        String currentUser = "ANONYMOUS";
+        if (currentUserOpt.isPresent()) {
+            currentUser = currentUserOpt.get().getEmail();
+        }
+
+        auditLogger.warn("AUTH_FAILURE; error=AuthenticationError; message={}; user={}; correlationId={}",
+                ex.getMessage(),
+                currentUser,
+                MDC.get("correlationId")
+        );
+
         var errorResponse = ErrorResponse.of(
                 ErrorCode.UNAUTHORIZED_ERROR.getCode(),
                 ErrorCode.UNAUTHORIZED_ERROR.getDefaultMessage()
@@ -158,6 +179,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthorizationDeniedException.class)
     private ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
+        var currentUserOpt = securityService.getCurrentUser();
+        String currentUser = "ANONYMOUS";
+        if (currentUserOpt.isPresent()) {
+            currentUser = currentUserOpt.get().getEmail();
+        }
+
+        auditLogger.warn("AUTH_FAILURE; error=AccessDenied; message={}; user={}; correlationId={}",
+                ex.getMessage(),
+                currentUser,
+                MDC.get("correlationId")
+        );
         var errorResponse = ErrorResponse.of(
                 ErrorCode.FORBIDDEN_ACCESS.getCode(),
                 ErrorCode.FORBIDDEN_ACCESS.getDefaultMessage(),

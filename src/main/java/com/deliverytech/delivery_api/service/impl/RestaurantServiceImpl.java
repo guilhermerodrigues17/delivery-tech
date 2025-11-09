@@ -14,6 +14,9 @@ import com.deliverytech.delivery_api.security.SecurityService;
 import com.deliverytech.delivery_api.service.RestaurantService;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
@@ -33,6 +36,8 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantMapper mapper;
     private final SecurityService securityService;
 
+    private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT");
+
     @Timed("delivery_api.restaurants.creation.timer")
     public RestaurantResponseDto createRestaurant(RestaurantRequestDto dto) {
         if (existsByName(dto.getName())) {
@@ -49,6 +54,20 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
 
         Restaurant saved = restaurantRepository.save(restaurantEntity);
+
+        var currentUserOpt = securityService.getCurrentUser();
+        String currentUser = "ANONYMOUS";
+        if (currentUserOpt.isPresent()) {
+            currentUser = currentUserOpt.get().getEmail();
+        }
+
+        auditLogger.info("CRUD_EVENT; type=CREATE; entity=Restaurant; entityId={}; user={}; correlationId={}",
+                saved.getId(),
+                currentUser,
+                MDC.get("correlationId")
+        );
+
+
         return mapper.toDto(saved);
     }
 
@@ -116,6 +135,19 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
 
         var updatedRestaurant = restaurantRepository.save(existingRestaurant);
+
+        var currentUserOpt = securityService.getCurrentUser();
+        String currentUser = "ANONYMOUS";
+        if (currentUserOpt.isPresent()) {
+            currentUser = currentUserOpt.get().getEmail();
+        }
+
+        auditLogger.info("CRUD_EVENT; type=UPDATE; entity=Restaurant; entityId={}; user={}; correlationId={}",
+                updatedRestaurant.getId(),
+                currentUser,
+                MDC.get("correlationId")
+        );
+
         return mapper.toDto(updatedRestaurant);
     }
 
@@ -124,6 +156,17 @@ public class RestaurantServiceImpl implements RestaurantService {
         existingRestaurant.setActive(dto.getActive());
 
         restaurantRepository.save(existingRestaurant);
+        var currentUserOpt = securityService.getCurrentUser();
+        String currentUser = "ANONYMOUS";
+        if (currentUserOpt.isPresent()) {
+            currentUser = currentUserOpt.get().getEmail();
+        }
+
+        auditLogger.info("CRUD_EVENT; type=DELETE; entity=Restaurant; entityId={}; user={}; correlationId={}",
+                existingRestaurant.getId(),
+                currentUser,
+                MDC.get("correlationId")
+        );
     }
 
     public BigDecimal calculateDeliveryTax(String restaurantId, String cep) {

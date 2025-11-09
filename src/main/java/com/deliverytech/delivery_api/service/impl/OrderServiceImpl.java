@@ -19,6 +19,9 @@ import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -44,6 +47,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final SecurityService securityService;
     private final MetricsServiceImpl metricsService;
+
+    private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT");
 
     @Transactional
     @Timed("delivery_api.orders.creation.timer")
@@ -88,6 +93,18 @@ public class OrderServiceImpl implements OrderService {
 
         var savedOrder = orderRepository.save(order);
         metricsService.incrementOrdersProcessed(savedOrder);
+
+        var currentUserOpt = securityService.getCurrentUser();
+        String currentUser = "ANONYMOUS";
+        if (currentUserOpt.isPresent()) {
+            currentUser = currentUserOpt.get().getEmail();
+        }
+
+        auditLogger.info("CRUD_EVENT; type=CREATE; entity=Order; entityId={}; user={}; correlationId={}",
+                savedOrder.getId(),
+                currentUser,
+                MDC.get("correlationId")
+        );
 
         return orderMapper.toDto(savedOrder);
     }
@@ -155,6 +172,19 @@ public class OrderServiceImpl implements OrderService {
         metricsService.incrementOrdersDelivered(updatedOrder);
         metricsService.incrementOrdersCanceled(updatedOrder);
 
+        var currentUserOpt = securityService.getCurrentUser();
+        String currentUser = "ANONYMOUS";
+        if (currentUserOpt.isPresent()) {
+            currentUser = currentUserOpt.get().getEmail();
+        }
+
+        auditLogger.info("CRUD_EVENT; type=UPDATE; entity=Order; entityId={}; user={}; correlationId={}",
+                updatedOrder.getId(),
+                currentUser,
+                MDC.get("correlationId")
+        );
+
+
         return orderMapper.toDto(updatedOrder);
     }
 
@@ -179,6 +209,18 @@ public class OrderServiceImpl implements OrderService {
 
         order.setStatus(OrderStatus.CANCELED);
         orderRepository.save(order);
+
+        var currentUserOpt = securityService.getCurrentUser();
+        String currentUser = "ANONYMOUS";
+        if (currentUserOpt.isPresent()) {
+            currentUser = currentUserOpt.get().getEmail();
+        }
+
+        auditLogger.info("CRUD_EVENT; type=DELETE; entity=Order; entityId={}; user={}; correlationId={}",
+                order.getId(),
+                currentUser,
+                MDC.get("correlationId")
+        );
     }
 
     public boolean isOwnerConsumer(String orderId) {
