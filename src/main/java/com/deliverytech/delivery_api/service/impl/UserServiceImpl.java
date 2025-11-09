@@ -13,6 +13,7 @@ import com.deliverytech.delivery_api.repository.UserRepository;
 import com.deliverytech.delivery_api.security.TokenService;
 import com.deliverytech.delivery_api.service.RestaurantService;
 import com.deliverytech.delivery_api.service.UserService;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,6 +33,7 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
 
+    @Timed("delivery_api.users.register.timer")
     public RegisterResponseDto createUser(RegisterUserRequestDto dto) {
         if (userRepository.existsByEmail(dto.getEmail())) throw new ConflictException("E-mail já utilizado");
 
@@ -67,6 +69,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Timed("delivery_api.users.login.timer")
     public LoginResponseDto login(LoginRequestDto dto) {
         var userAndPass = new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword());
         Authentication authentication = authenticationManager.authenticate(userAndPass);

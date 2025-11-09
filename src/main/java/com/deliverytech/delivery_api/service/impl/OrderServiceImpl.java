@@ -17,6 +17,7 @@ import com.deliverytech.delivery_api.service.ConsumerService;
 import com.deliverytech.delivery_api.service.OrderService;
 import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -42,8 +43,10 @@ public class OrderServiceImpl implements OrderService {
     private final ProductService productService;
     private final OrderMapper orderMapper;
     private final SecurityService securityService;
+    private final MetricsServiceImpl metricsService;
 
     @Transactional
+    @Timed("delivery_api.orders.creation.timer")
     public OrderResponseDto createOrder(OrderRequestDto dto) {
         Consumer consumer = consumerService.findById(dto.getConsumerId());
         Restaurant restaurant = restaurantService.findById(dto.getRestaurantId());
@@ -83,8 +86,10 @@ public class OrderServiceImpl implements OrderService {
         order.setSubtotal(subtotal);
         order.setTotal(subtotal.add(order.getDeliveryTax()));
 
-        var saved = orderRepository.save(order);
-        return orderMapper.toDto(saved);
+        var savedOrder = orderRepository.save(order);
+        metricsService.incrementOrdersProcessed(savedOrder);
+
+        return orderMapper.toDto(savedOrder);
     }
 
     public Order findById(String id) {
@@ -93,11 +98,13 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Transactional(readOnly = true)
+    @Timed("delivery_api.orders.findById.timer")
     public OrderResponseDto getOrderResponseById(String id) {
         Order order = findById(id);
         return orderMapper.toDto(order);
     }
 
+    @Timed("delivery_api.orders.findByConsumerId.timer")
     public Page<OrderSummaryResponseDto> findByConsumerId(String consumerId, Pageable pageable) {
         Consumer consumer = consumerService.findById(UUID.fromString(consumerId));
         Page<Order> orderPages = orderRepository.findByConsumerId(consumer.getId(), pageable);
@@ -105,6 +112,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Timed("delivery_api.orders.findByRestaurantId.timer")
     public Page<OrderSummaryResponseDto> findByRestaurantId(String restaurantId, Pageable pageable) {
         var restaurant = restaurantService.findById(UUID.fromString(restaurantId));
         Page<Order> ordersPage = orderRepository.findByRestaurantId(restaurant.getId(), pageable);
@@ -131,6 +139,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Transactional
+    @Timed("delivery_api.orders.updateStatus.timer")
     public OrderResponseDto updateOrderStatus(String id, OrderStatus newStatus) {
         Order order = findById(id);
         var currentStatus = order.getStatus();
@@ -141,9 +150,12 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setStatus(newStatus);
-        var response = orderRepository.save(order);
+        var updatedOrder = orderRepository.save(order);
 
-        return orderMapper.toDto(response);
+        metricsService.incrementOrdersDelivered(updatedOrder);
+        metricsService.incrementOrdersCanceled(updatedOrder);
+
+        return orderMapper.toDto(updatedOrder);
     }
 
     public OrderTotalResponseDto calculateOrderTotal(OrderRequestDto dto) {

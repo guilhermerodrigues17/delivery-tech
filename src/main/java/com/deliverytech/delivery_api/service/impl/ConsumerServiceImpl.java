@@ -10,6 +10,7 @@ import com.deliverytech.delivery_api.model.User;
 import com.deliverytech.delivery_api.repository.ConsumerRepository;
 import com.deliverytech.delivery_api.security.SecurityService;
 import com.deliverytech.delivery_api.service.ConsumerService;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +28,7 @@ public class ConsumerServiceImpl implements ConsumerService {
     private final ConsumerMapper mapper;
     private final SecurityService securityService;
 
+    @Timed("delivery_api.consumers.creation.timer")
     public ConsumerResponseDto create(ConsumerRequestDto dto) {
         if (existsByEmail(dto.getEmail())) {
             throw new ConflictException("E-mail já está em uso");

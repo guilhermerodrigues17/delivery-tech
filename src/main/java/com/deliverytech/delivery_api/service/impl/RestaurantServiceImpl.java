@@ -12,6 +12,7 @@ import com.deliverytech.delivery_api.model.enums.CepZonesDistance;
 import com.deliverytech.delivery_api.repository.RestaurantRepository;
 import com.deliverytech.delivery_api.security.SecurityService;
 import com.deliverytech.delivery_api.service.RestaurantService;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -32,6 +33,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantMapper mapper;
     private final SecurityService securityService;
 
+    @Timed("delivery_api.restaurants.creation.timer")
     public RestaurantResponseDto createRestaurant(RestaurantRequestDto dto) {
         if (existsByName(dto.getName())) {
             throw new ConflictException("Nome de restaurante já está em uso");
@@ -66,6 +68,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurantRepository.existsByName(name);
     }
 
+    @Timed("delivery_api.restaurants.search.timer")
     public Page<RestaurantResponseDto> searchRestaurants(String name, String category, Boolean active, Pageable pageable) {
         var restaurant = new Restaurant();
         restaurant.setName(name);

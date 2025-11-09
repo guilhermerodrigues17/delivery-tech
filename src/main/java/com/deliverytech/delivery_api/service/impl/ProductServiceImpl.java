@@ -11,6 +11,7 @@ import com.deliverytech.delivery_api.repository.ProductRepository;
 import com.deliverytech.delivery_api.security.SecurityService;
 import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -33,6 +34,7 @@ public class ProductServiceImpl implements ProductService {
     private final SecurityService securityService;
 
     @Transactional
+    @Timed("delivery_api.products.creation.timer")
     public ProductResponseDto createProduct(ProductRequestDto dto) {
         Restaurant restaurant = restaurantService.findById(dto.getRestaurantId());
 
@@ -56,6 +58,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Transactional(readOnly = true)
+    @Timed("delivery_api.products.findProductsByRestaurantId.timer")
     public Page<ProductResponseDto> findProductsByRestaurantId(String restaurantId, Pageable pageable) {
         var restaurant = restaurantService.findById(UUID.fromString(restaurantId));
 
@@ -79,6 +82,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Transactional
+    @Timed("delivery_api.products.update.timer")
     public ProductResponseDto updateProduct(String id, ProductRequestDto dto) {
         var product = findProductEntityById(id);
         if (!product.getRestaurant().getId().equals(dto.getRestaurantId())) {
