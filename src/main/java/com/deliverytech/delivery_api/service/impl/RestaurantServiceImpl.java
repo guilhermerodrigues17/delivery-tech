@@ -3,6 +3,9 @@ package com.deliverytech.delivery_api.service.impl;
 import com.deliverytech.delivery_api.dto.request.RestaurantRequestDto;
 import com.deliverytech.delivery_api.dto.request.RestaurantStatusUpdateDto;
 import com.deliverytech.delivery_api.dto.response.RestaurantResponseDto;
+import com.deliverytech.delivery_api.events.restaurant.RestaurantCreatedEvent;
+import com.deliverytech.delivery_api.events.restaurant.RestaurantDisableEvent;
+import com.deliverytech.delivery_api.events.restaurant.RestaurantUpdateEvent;
 import com.deliverytech.delivery_api.exceptions.BusinessException;
 import com.deliverytech.delivery_api.exceptions.ConflictException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
@@ -12,11 +15,11 @@ import com.deliverytech.delivery_api.model.enums.CepZonesDistance;
 import com.deliverytech.delivery_api.repository.RestaurantRepository;
 import com.deliverytech.delivery_api.security.SecurityService;
 import com.deliverytech.delivery_api.service.RestaurantService;
+import com.deliverytech.delivery_api.validation.RestaurantValidator;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.tracing.Tracer;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
@@ -35,14 +38,12 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantRepository restaurantRepository;
     private final RestaurantMapper mapper;
     private final SecurityService securityService;
-
-    private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT");
+    private final RestaurantValidator restaurantValidator;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Timed("delivery_api.restaurants.creation.timer")
     public RestaurantResponseDto createRestaurant(RestaurantRequestDto dto) {
-        if (existsByName(dto.getName())) {
-            throw new ConflictException("Nome de restaurante já está em uso");
-        }
+        restaurantValidator.validateName(dto.getName());
 
         Restaurant restaurantEntity = mapper.toEntity(dto);
         restaurantEntity.setActive(true);
@@ -60,13 +61,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         if (currentUserOpt.isPresent()) {
             currentUser = currentUserOpt.get().getEmail();
         }
-
-        auditLogger.info("CRUD_EVENT; type=CREATE; entity=Restaurant; entityId={}; user={}; correlationId={}",
-                saved.getId(),
-                currentUser,
-                MDC.get("correlationId")
-        );
-
+        eventPublisher.publishEvent(new RestaurantCreatedEvent(this, saved, currentUser));
 
         return mapper.toDto(saved);
     }
@@ -118,9 +113,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         Restaurant existingRestaurant = findById(UUID.fromString(id));
 
         if (!existingRestaurant.getName().equals(dto.getName())) {
-            if (existsByName(dto.getName())) {
-                throw new ConflictException("Nome de restaurante já está em uso");
-            }
+            restaurantValidator.validateName(dto.getName());
             existingRestaurant.setName(dto.getName());
         }
 
@@ -141,12 +134,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         if (currentUserOpt.isPresent()) {
             currentUser = currentUserOpt.get().getEmail();
         }
-
-        auditLogger.info("CRUD_EVENT; type=UPDATE; entity=Restaurant; entityId={}; user={}; correlationId={}",
-                updatedRestaurant.getId(),
-                currentUser,
-                MDC.get("correlationId")
-        );
+        eventPublisher.publishEvent(new RestaurantUpdateEvent(this, updatedRestaurant, currentUser));
 
         return mapper.toDto(updatedRestaurant);
     }
@@ -161,12 +149,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         if (currentUserOpt.isPresent()) {
             currentUser = currentUserOpt.get().getEmail();
         }
-
-        auditLogger.info("CRUD_EVENT; type=DELETE; entity=Restaurant; entityId={}; user={}; correlationId={}",
-                existingRestaurant.getId(),
-                currentUser,
-                MDC.get("correlationId")
-        );
+        eventPublisher.publishEvent(new RestaurantDisableEvent(this, existingRestaurant, currentUser));
     }
 
     public BigDecimal calculateDeliveryTax(String restaurantId, String cep) {
