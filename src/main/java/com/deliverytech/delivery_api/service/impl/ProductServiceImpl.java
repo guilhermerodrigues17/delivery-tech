@@ -2,6 +2,9 @@ package com.deliverytech.delivery_api.service.impl;
 
 import com.deliverytech.delivery_api.dto.request.ProductRequestDto;
 import com.deliverytech.delivery_api.dto.response.ProductResponseDto;
+import com.deliverytech.delivery_api.events.product.ProductCreateEvent;
+import com.deliverytech.delivery_api.events.product.ProductDeleteEvent;
+import com.deliverytech.delivery_api.events.product.ProductUpdateEvent;
 import com.deliverytech.delivery_api.exceptions.BusinessException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.mapper.ProductMapper;
@@ -13,9 +16,7 @@ import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
@@ -35,8 +36,7 @@ public class ProductServiceImpl implements ProductService {
     private final RestaurantService restaurantService;
     private final ProductMapper productMapper;
     private final SecurityService securityService;
-
-    private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT");
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     @Timed("delivery_api.products.creation.timer")
@@ -46,22 +46,16 @@ public class ProductServiceImpl implements ProductService {
         Product product = productMapper.toEntity(dto);
         product.setRestaurant(restaurant);
 
-        var saved = productRepository.save(product);
+        var savedProduct = productRepository.save(product);
 
         var currentUserOpt = securityService.getCurrentUser();
         String currentUser = "ANONYMOUS";
         if (currentUserOpt.isPresent()) {
             currentUser = currentUserOpt.get().getEmail();
         }
+        eventPublisher.publishEvent(new ProductCreateEvent(this, savedProduct, currentUser));
 
-        auditLogger.info("CRUD_EVENT; type=CREATE; entity=Product; entityId={}; user={}; correlationId={}",
-                saved.getId(),
-                currentUser,
-                MDC.get("correlationId")
-        );
-
-
-        return productMapper.toResponseDto(saved);
+        return productMapper.toResponseDto(savedProduct);
     }
 
     @Transactional(readOnly = true)
@@ -116,21 +110,16 @@ public class ProductServiceImpl implements ProductService {
         product.setCategory(dto.getCategory());
         product.setAvailable(dto.getAvailable());
 
-        var response = productRepository.save(product);
+        var updatedProduct = productRepository.save(product);
 
         var currentUserOpt = securityService.getCurrentUser();
         String currentUser = "ANONYMOUS";
         if (currentUserOpt.isPresent()) {
             currentUser = currentUserOpt.get().getEmail();
         }
+        eventPublisher.publishEvent(new ProductUpdateEvent(this, updatedProduct, currentUser));
 
-        auditLogger.info("CRUD_EVENT; type=UPDATE; entity=Product; entityId={}; user={}; correlationId={}",
-                response.getId(),
-                currentUser,
-                MDC.get("correlationId")
-        );
-
-        return productMapper.toResponseDto(response);
+        return productMapper.toResponseDto(updatedProduct);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -143,12 +132,7 @@ public class ProductServiceImpl implements ProductService {
         if (currentUserOpt.isPresent()) {
             currentUser = currentUserOpt.get().getEmail();
         }
-
-        auditLogger.info("CRUD_EVENT; type=DELETE; entity=Product; entityId={}; user={}; correlationId={}",
-                product.getId(),
-                currentUser,
-                MDC.get("correlationId")
-        );
+        eventPublisher.publishEvent(new ProductDeleteEvent(this, product, currentUser));
     }
 
     public void toggleAvailability(String id) {
