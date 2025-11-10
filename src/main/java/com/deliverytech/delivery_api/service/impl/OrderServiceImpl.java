@@ -5,6 +5,9 @@ import com.deliverytech.delivery_api.dto.request.OrderRequestDto;
 import com.deliverytech.delivery_api.dto.response.OrderResponseDto;
 import com.deliverytech.delivery_api.dto.response.OrderSummaryResponseDto;
 import com.deliverytech.delivery_api.dto.response.OrderTotalResponseDto;
+import com.deliverytech.delivery_api.events.order.OrderCancelEvent;
+import com.deliverytech.delivery_api.events.order.OrderCreatedEvent;
+import com.deliverytech.delivery_api.events.order.OrderStatusUpdateEvent;
 import com.deliverytech.delivery_api.exceptions.BusinessException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.mapper.OrderMapper;
@@ -17,11 +20,10 @@ import com.deliverytech.delivery_api.service.ConsumerService;
 import com.deliverytech.delivery_api.service.OrderService;
 import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
+import com.deliverytech.delivery_api.validation.OrderValidator;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -47,8 +49,9 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final SecurityService securityService;
     private final MetricsServiceImpl metricsService;
+    private final OrderValidator orderValidator;
 
-    private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT");
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     @Timed("delivery_api.orders.creation.timer")
@@ -65,12 +68,7 @@ public class OrderServiceImpl implements OrderService {
 
         List<OrderItem> orderItems = dto.getItems().stream().map(item -> {
             Product product = productService.findProductEntityById(item.getProductId().toString());
-
-            if (!product.getRestaurant().getId().equals(restaurant.getId())) {
-                throw new BusinessException(
-                        String.format("O produto '%s' (%s) não pertence ao restaurante informado.",
-                                product.getName(), product.getId()));
-            }
+            orderValidator.validateProductBelongsRestaurant(restaurant, product);
 
             OrderItem orderItem = new OrderItem();
             orderItem.setProduct(product);
@@ -99,12 +97,7 @@ public class OrderServiceImpl implements OrderService {
         if (currentUserOpt.isPresent()) {
             currentUser = currentUserOpt.get().getEmail();
         }
-
-        auditLogger.info("CRUD_EVENT; type=CREATE; entity=Order; entityId={}; user={}; correlationId={}",
-                savedOrder.getId(),
-                currentUser,
-                MDC.get("correlationId")
-        );
+        eventPublisher.publishEvent(new OrderCreatedEvent(this, savedOrder, currentUser));
 
         return orderMapper.toDto(savedOrder);
     }
@@ -177,13 +170,7 @@ public class OrderServiceImpl implements OrderService {
         if (currentUserOpt.isPresent()) {
             currentUser = currentUserOpt.get().getEmail();
         }
-
-        auditLogger.info("CRUD_EVENT; type=UPDATE; entity=Order; entityId={}; user={}; correlationId={}",
-                updatedOrder.getId(),
-                currentUser,
-                MDC.get("correlationId")
-        );
-
+        eventPublisher.publishEvent(new OrderStatusUpdateEvent(this, updatedOrder, currentUser));
 
         return orderMapper.toDto(updatedOrder);
     }
@@ -215,12 +202,7 @@ public class OrderServiceImpl implements OrderService {
         if (currentUserOpt.isPresent()) {
             currentUser = currentUserOpt.get().getEmail();
         }
-
-        auditLogger.info("CRUD_EVENT; type=DELETE; entity=Order; entityId={}; user={}; correlationId={}",
-                order.getId(),
-                currentUser,
-                MDC.get("correlationId")
-        );
+        eventPublisher.publishEvent(new OrderCancelEvent(this, order, currentUser));
     }
 
     public boolean isOwnerConsumer(String orderId) {
