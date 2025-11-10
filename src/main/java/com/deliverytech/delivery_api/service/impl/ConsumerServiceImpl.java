@@ -2,6 +2,8 @@ package com.deliverytech.delivery_api.service.impl;
 
 import com.deliverytech.delivery_api.dto.request.ConsumerRequestDto;
 import com.deliverytech.delivery_api.dto.response.ConsumerResponseDto;
+import com.deliverytech.delivery_api.events.consumer.ConsumerCreateEvent;
+import com.deliverytech.delivery_api.events.consumer.ConsumerUpdateEvent;
 import com.deliverytech.delivery_api.exceptions.ConflictException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.mapper.ConsumerMapper;
@@ -12,9 +14,7 @@ import com.deliverytech.delivery_api.security.SecurityService;
 import com.deliverytech.delivery_api.service.ConsumerService;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,8 +30,7 @@ public class ConsumerServiceImpl implements ConsumerService {
     private final ConsumerRepository consumerRepository;
     private final ConsumerMapper mapper;
     private final SecurityService securityService;
-
-    private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT");
+    private final ApplicationEventPublisher eventPublisher;
 
     @Timed("delivery_api.consumers.creation.timer")
     public ConsumerResponseDto create(ConsumerRequestDto dto) {
@@ -55,12 +54,7 @@ public class ConsumerServiceImpl implements ConsumerService {
         if (currentUserOpt.isPresent()) {
             currentUser = currentUserOpt.get().getEmail();
         }
-
-        auditLogger.info("CRUD_EVENT; type=CREATE; entity=Consumer; entityId={}; user={}; correlationId={}",
-                savedConsumer.getId(),
-                currentUser,
-                MDC.get("correlationId")
-        );
+        eventPublisher.publishEvent(new ConsumerCreateEvent(this, savedConsumer, currentUser));
 
         return mapper.toDto(savedConsumer);
     }
@@ -119,12 +113,7 @@ public class ConsumerServiceImpl implements ConsumerService {
         if (currentUserOpt.isPresent()) {
             currentUser = currentUserOpt.get().getEmail();
         }
-
-        auditLogger.info("CRUD_EVENT; type=UPDATE; entity=Consumer; entityId={}; user={}; correlationId={}",
-                updatedConsumer.getId(),
-                currentUser,
-                MDC.get("correlationId")
-        );
+        eventPublisher.publishEvent(new ConsumerUpdateEvent(this, updatedConsumer, currentUser));
 
         return mapper.toDto(updatedConsumer);
     }
@@ -140,13 +129,7 @@ public class ConsumerServiceImpl implements ConsumerService {
         if (currentUserOpt.isPresent()) {
             currentUser = currentUserOpt.get().getEmail();
         }
-
-        auditLogger.info("CRUD_EVENT; type=DELETE; entity=Consumer; entityId={}; user={}; correlationId={}",
-                existingConsumer.getId(),
-                currentUser,
-                MDC.get("correlationId")
-        );
-
+        eventPublisher.publishEvent(new ConsumerCreateEvent(this, existingConsumer, currentUser));
     }
 
     public boolean isOwnerByEmail(String consumerId) {
