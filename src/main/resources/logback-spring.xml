@@ -2,7 +2,9 @@
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
-    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="delivery-api"/>
+    <springProperty scope="context" name="APP_NAME"
+                    source="spring.application.name"
+                    defaultValue="delivery-api"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -11,10 +13,13 @@
         </encoder>
     </appender>
 
-    <appender name="FILE_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="FILE_JSON"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>./logs/delivery-api.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>./logs/delivery-api.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>./logs/delivery-api.%d{yyyy-MM-dd}.%i.log.gz
+            </fileNamePattern>
             <maxHistory>30</maxHistory>
             <maxFileSize>100MB</maxFileSize>
             <totalSizeCap>3GB</totalSizeCap>
@@ -27,33 +32,39 @@
             <mdc>
                 <includeMdcKeyName>traceId</includeMdcKeyName>
                 <includeMdcKeyName>spanId</includeMdcKeyName>
-                <includeMdcKeyName>correlationId</includeMdcKeyName>
             </mdc>
         </encoder>
     </appender>
 
-    <appender name="AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="AUDIT_FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>./logs/delivery-api-audit.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./logs/delivery-api-audit.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./logs/delivery-api-audit.%d{yyyy-MM-dd}.log.gz
+            </fileNamePattern>
             <maxHistory>365</maxHistory>
         </rollingPolicy>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <customFields>{"application":"${APP_NAME}"}</customFields>
             <mdc>
-                <includeMdcKeyName>correlationId</includeMdcKeyName>
+                <includeMdcKeyName>traceId</includeMdcKeyName>
+                <includeMdcKeyName>spanId</includeMdcKeyName>
             </mdc>
         </encoder>
     </appender>
 
     <logger name="org.springframework.web" level="INFO"/>
-    <logger name="org.springframework.security" level="INFO"/> <logger name="org.hibernate.SQL" level="INFO"/> <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.springframework.security" level="INFO"/>
+    <logger name="org.hibernate.SQL" level="INFO"/>
+    <logger name="org.hibernate" level="WARN"/>
 
     <logger name="AUDIT" level="INFO" additivity="false">
         <appender-ref ref="AUDIT_FILE"/>
     </logger>
 
-    <logger name="com.deliverytech.delivery_api" level="DEBUG" additivity="false">
+    <logger name="com.deliverytech.delivery_api" level="DEBUG"
+            additivity="false">
         <springProfile name="dev | test">
             <appender-ref ref="CONSOLE"/>
         </springProfile>
