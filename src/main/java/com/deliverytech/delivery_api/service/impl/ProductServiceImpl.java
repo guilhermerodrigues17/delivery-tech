@@ -16,6 +16,9 @@ import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -40,6 +43,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     @Timed("delivery_api.products.creation.timer")
+    @CacheEvict(value = "products_by_restaurant", key = "#dto.restaurantId")
     public ProductResponseDto createProduct(ProductRequestDto dto) {
         Restaurant restaurant = restaurantService.findById(dto.getRestaurantId());
 
@@ -59,6 +63,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "products", key = "#id")
     public ProductResponseDto findProductByIdResponse(String id) {
         var product = findProductEntityById(id);
         return productMapper.toResponseDto(product);
@@ -72,6 +77,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional(readOnly = true)
     @Timed("delivery_api.products.findProductsByRestaurantId.timer")
+    @Cacheable(value = "products_by_restaurant", key = "#restaurantId")
     public Page<ProductResponseDto> findProductsByRestaurantId(String restaurantId, Pageable pageable) {
         var restaurant = restaurantService.findById(UUID.fromString(restaurantId));
 
@@ -96,6 +102,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     @Timed("delivery_api.products.update.timer")
+    @Caching(evict = {
+            @CacheEvict(value = "products", key = "#id"),
+            @CacheEvict(value = "products_by_restaurant", key = "#dto.restaurantId")
+    })
     public ProductResponseDto updateProduct(String id, ProductRequestDto dto) {
         var product = findProductEntityById(id);
         if (!product.getRestaurant().getId().equals(dto.getRestaurantId())) {
@@ -123,22 +133,33 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void deleteProduct(String id) {
-        var product = findProductEntityById(id);
-        productRepository.delete(product);
+    @Caching(evict = {
+            @CacheEvict(value = "products", key = "#id"),
+            @CacheEvict(value = "products_by_restaurant", key = "#result.restaurant.id")
+    })
+    public Product deleteProduct(String id) {
+        var productToDelete = findProductEntityById(id);
+        productRepository.delete(productToDelete);
 
         var currentUserOpt = securityService.getCurrentUser();
         String currentUser = "ANONYMOUS";
         if (currentUserOpt.isPresent()) {
             currentUser = currentUserOpt.get().getEmail();
         }
-        eventPublisher.publishEvent(new ProductDeleteEvent(this, product, currentUser));
+        eventPublisher.publishEvent(new ProductDeleteEvent(this, productToDelete, currentUser));
+
+        return productToDelete;
     }
 
-    public void toggleAvailability(String id) {
+    @Caching(evict = {
+            @CacheEvict(value = "products", key = "#id"),
+            @CacheEvict(value = "products_by_restaurant", key = "#result.restaurant.id")
+    })
+    public Product toggleAvailability(String id) {
         Product productFound = findProductEntityById(id);
         productFound.setAvailable(!productFound.getAvailable());
-        productRepository.save(productFound);
+
+        return productRepository.save(productFound);
     }
 
     public boolean isOwnerOfProductRestaurant(String productId) {

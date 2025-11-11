@@ -13,6 +13,6 @@ public interface ProductService {
     Page<ProductResponseDto> findProductsByRestaurantId(String restaurantId, Pageable pageable);
     Page<ProductResponseDto> searchProducts(String name, String category, Pageable pageable);
     ProductResponseDto updateProduct(String id, ProductRequestDto dto);
-    void deleteProduct(String id);
-    void toggleAvailability(String id);
+    Product deleteProduct(String id);
+    Product toggleAvailability(String id);
 }

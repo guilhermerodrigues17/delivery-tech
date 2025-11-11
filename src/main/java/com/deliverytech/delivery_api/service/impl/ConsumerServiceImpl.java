@@ -14,6 +14,9 @@ import com.deliverytech.delivery_api.security.SecurityService;
 import com.deliverytech.delivery_api.service.ConsumerService;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +36,7 @@ public class ConsumerServiceImpl implements ConsumerService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Timed("delivery_api.consumers.creation.timer")
+    @CacheEvict(value = "consumers", allEntries = true)
     public ConsumerResponseDto create(ConsumerRequestDto dto) {
         if (existsByEmail(dto.getEmail())) {
             throw new ConflictException("E-mail já está em uso");
@@ -65,6 +69,7 @@ public class ConsumerServiceImpl implements ConsumerService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "consumers", key = "#id")
     public ConsumerResponseDto findByIdResponse(String id) {
         Consumer consumer = findById(UUID.fromString(id));
         return mapper.toDto(consumer);
@@ -80,11 +85,16 @@ public class ConsumerServiceImpl implements ConsumerService {
         return consumerRepository.existsByEmail(email);
     }
 
+    @Cacheable(value = "consumers", key = "'allActive'")
     public Page<ConsumerResponseDto> findAllActive(Pageable pageable) {
         Page<Consumer> consumerPage = consumerRepository.findByActiveTrue(pageable);
         return consumerPage.map(mapper::toDto);
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "consumers", key = "#id"),
+            @CacheEvict(value = "consumers", key = "'allActive'")
+    })
     public ConsumerResponseDto updateConsumer(String id, ConsumerRequestDto dto) {
         Consumer existingConsumer = findById(UUID.fromString(id));
 
@@ -118,6 +128,10 @@ public class ConsumerServiceImpl implements ConsumerService {
         return mapper.toDto(updatedConsumer);
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "consumers", key = "#id"),
+            @CacheEvict(value = "consumers", key = "'allActive'")
+    })
     public void softDeleteConsumer(String id) {
         Consumer existingConsumer = findById(UUID.fromString(id));
         existingConsumer.setActive(false);

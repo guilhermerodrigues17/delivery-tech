@@ -7,7 +7,6 @@ import com.deliverytech.delivery_api.events.restaurant.RestaurantCreatedEvent;
 import com.deliverytech.delivery_api.events.restaurant.RestaurantDisableEvent;
 import com.deliverytech.delivery_api.events.restaurant.RestaurantUpdateEvent;
 import com.deliverytech.delivery_api.exceptions.BusinessException;
-import com.deliverytech.delivery_api.exceptions.ConflictException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
 import com.deliverytech.delivery_api.mapper.RestaurantMapper;
 import com.deliverytech.delivery_api.model.Restaurant;
@@ -17,8 +16,10 @@ import com.deliverytech.delivery_api.security.SecurityService;
 import com.deliverytech.delivery_api.service.RestaurantService;
 import com.deliverytech.delivery_api.validation.RestaurantValidator;
 import io.micrometer.core.annotation.Timed;
-import io.micrometer.tracing.Tracer;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -42,6 +43,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Timed("delivery_api.restaurants.creation.timer")
+    @CacheEvict(value = "restaurants", allEntries = true)
     public RestaurantResponseDto createRestaurant(RestaurantRequestDto dto) {
         restaurantValidator.validateName(dto.getName());
 
@@ -73,6 +75,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "restaurants", key = "#id")
     public RestaurantResponseDto findByIdResponse(String id) {
         Restaurant restaurantFound = findById(UUID.fromString(id));
         return mapper.toDto(restaurantFound);
@@ -98,6 +101,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurants.map(mapper::toDto);
     }
 
+    @Cacheable(value = "restaurants", key = "'allActive'")
     public Page<RestaurantResponseDto> findAllActive(Pageable pageable) {
         Page<Restaurant> restaurantsPage = restaurantRepository.findByActiveTrue(pageable);
         return restaurantsPage.map(mapper::toDto);
@@ -109,6 +113,10 @@ public class RestaurantServiceImpl implements RestaurantService {
         return findAllActive(pageable);
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "restaurants", key = "#id"),
+            @CacheEvict(value = "restaurants", key = "'allActive'")
+    })
     public RestaurantResponseDto updateRestaurant(String id, RestaurantRequestDto dto) {
         Restaurant existingRestaurant = findById(UUID.fromString(id));
 
@@ -139,6 +147,10 @@ public class RestaurantServiceImpl implements RestaurantService {
         return mapper.toDto(updatedRestaurant);
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "restaurants", key = "#id"),
+            @CacheEvict(value = "restaurants", key = "'allActive'")
+    })
     public void updateStatusActive(String id, RestaurantStatusUpdateDto dto) {
         Restaurant existingRestaurant = findById(UUID.fromString(id));
         existingRestaurant.setActive(dto.getActive());
