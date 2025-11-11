@@ -5,4 +5,4 @@ scrape_configs:
   - job_name: 'delivery-api'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['${HOST_IP_HERE}:8080']
+      - targets: ['delivery-api:8080']
