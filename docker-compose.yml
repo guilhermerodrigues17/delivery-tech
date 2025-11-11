@@ -1,10 +1,21 @@
-version: '3.8'
-
 networks:
   observability:
     driver: bridge
 
 services:
+  delivery-api:
+    container_name: delivery-api
+    build: .
+    networks:
+      - observability
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:deliverydb
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+      - SPRING_PROFILES_ACTIVE=prod
+      - JWT_SECRET=${JWT_SECRET}
+
   prometheus:
     image: prom/prometheus:v2.47.0
     container_name: prometheus
@@ -18,6 +29,8 @@ services:
       - observability
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    depends_on:
+      - delivery-api
 
   zipkin:
     image: openzipkin/zipkin:latest

@@ -35,4 +35,4 @@ build/
 ### Logs ###
 logs
 
-infra/prometheus.yml
+.env
