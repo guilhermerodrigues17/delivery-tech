@@ -43,7 +43,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     @Timed("delivery_api.products.creation.timer")
-    @CacheEvict(value = "products_by_restaurant", key = "#dto.restaurantId")
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponseDto createProduct(ProductRequestDto dto) {
         Restaurant restaurant = restaurantService.findById(dto.getRestaurantId());
 
@@ -77,7 +77,6 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional(readOnly = true)
     @Timed("delivery_api.products.findProductsByRestaurantId.timer")
-    @Cacheable(value = "products_by_restaurant", key = "#restaurantId")
     public Page<ProductResponseDto> findProductsByRestaurantId(String restaurantId, Pageable pageable) {
         var restaurant = restaurantService.findById(UUID.fromString(restaurantId));
 
@@ -102,10 +101,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     @Timed("delivery_api.products.update.timer")
-    @Caching(evict = {
-            @CacheEvict(value = "products", key = "#id"),
-            @CacheEvict(value = "products_by_restaurant", key = "#dto.restaurantId")
-    })
+    @CacheEvict(value = "products", key = "#id")
     public ProductResponseDto updateProduct(String id, ProductRequestDto dto) {
         var product = findProductEntityById(id);
         if (!product.getRestaurant().getId().equals(dto.getRestaurantId())) {
@@ -133,10 +129,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    @Caching(evict = {
-            @CacheEvict(value = "products", key = "#id"),
-            @CacheEvict(value = "products_by_restaurant", key = "#result.restaurant.id")
-    })
+    @CacheEvict(value = "products", key = "#id")
     public Product deleteProduct(String id) {
         var productToDelete = findProductEntityById(id);
         productRepository.delete(productToDelete);
@@ -151,10 +144,7 @@ public class ProductServiceImpl implements ProductService {
         return productToDelete;
     }
 
-    @Caching(evict = {
-            @CacheEvict(value = "products", key = "#id"),
-            @CacheEvict(value = "products_by_restaurant", key = "#result.restaurant.id")
-    })
+    @CacheEvict(value = "products", key = "#id")
     public Product toggleAvailability(String id) {
         Product productFound = findProductEntityById(id);
         productFound.setAvailable(!productFound.getAvailable());
