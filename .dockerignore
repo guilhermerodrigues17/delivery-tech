@@ -1,0 +1,30 @@
+# Git history
+.git
+.gitignore
+.gitattributes
+
+# maven build packages
+target/
+
+# IDE and OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# local logs
+logs/
+
+# Docs
+README.md
+HELP.md
+
+# Windows files (Dockerfile uses linux)
+mvnw.cmd
+
+# secrets and env
+.env
+.env.example
+
+# docker compose for dev env
+docker-compose.dev.yml
