@@ -1,0 +1,92 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: delivery-api
+  profiles:
+    active: dev
+
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
+
+  devtools:
+    restart:
+      enabled: true
+
+jwt:
+  secret: '${JWT_SECRET}'
+  expiration: 86400
+
+springdoc:
+  api-docs:
+    path: /api-docs
+scalar:
+  path: /scalar
+
+info:
+  app:
+    name: Delivery Tech API
+    description: API REST para o sistema de delivery da Delivery Tech.
+    encoding: UTF-8
+    developer: Guilherme Rodrigues
+    contact:
+      email: guilhermerodriguesm23@gmail.com
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,env,loggers
+      cors:
+        allowed-origins: "*"
+        allowed-methods: GET,POST
+  endpoint:
+    env:
+      show-values: when-authorized
+      roles: ADMIN
+    health:
+      show-details: ALWAYS
+      show-components: ALWAYS
+    info:
+      enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  health:
+    diskspace:
+      enabled: true
+      threshold: 10GB
+    db:
+      enabled: true
+  info:
+    env:
+      enabled: true
+    git:
+      mode: FULL
+    build:
+      enabled: true
+  metrics:
+    web:
+      server:
+        request:
+          autotime:
+            enabled: true
+    tags:
+      application: '${spring.application.name}'
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
