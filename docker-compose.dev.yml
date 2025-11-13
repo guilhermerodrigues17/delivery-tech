@@ -1,0 +1,84 @@
+networks:
+  dev-network:
+    driver: bridge
+
+volumes:
+  postgres-dev-data:
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: delivery-api-dev-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=delivery_dev_db
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+    networks:
+      - dev-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-dev
+    ports:
+      - "6379:6379"
+    networks:
+      - dev-network
+
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: prometheus-dev
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - dev-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin-dev
+    ports:
+      - "9411:9411"
+    networks:
+      - dev-network
+
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki-dev
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - dev-network
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: promtail-dev
+    volumes:
+      - ./infra/promtail-config.yml:/etc/promtail/config.yml
+      - ./logs/delivery-api.log:/var/logs/delivery-api.log
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - dev-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana-dev
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - loki
+      - zipkin
+    networks:
+      - dev-network

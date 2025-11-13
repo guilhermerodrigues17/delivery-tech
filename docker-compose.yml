@@ -1,30 +1,54 @@
 networks:
-  observability:
+  prod-network:
     driver: bridge
+
+volumes:
+  postgres-prod-data:
+  redis-prod-data:
 
 services:
   delivery-api:
     container_name: delivery-api
     build: .
     networks:
-      - observability
+      - prod-network
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:h2:mem:deliverydb
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
       - SPRING_PROFILES_ACTIVE=prod
       - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./logs:/app/logs
     depends_on:
+      - postgres
       - redis
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: delivery-api-prod-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-prod-data:/var/lib/postgresql/data
+    networks:
+      - prod-network
 
   redis:
     image: redis:7-alpine
     container_name: redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis-prod-data:/data
     networks:
-      - observability
+      - prod-network
 
   prometheus:
     image: prom/prometheus:v2.47.0
@@ -36,7 +60,7 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     networks:
-      - observability
+      - prod-network
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -48,7 +72,7 @@ services:
     ports:
       - "9411:9411"
     networks:
-      - observability
+      - prod-network
 
   loki:
     image: grafana/loki:2.9.0
@@ -57,19 +81,19 @@ services:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yaml
     networks:
-      - observability
+      - prod-network
 
   promtail:
     image: grafana/promtail:2.9.0
     container_name: promtail
     volumes:
       - ./infra/promtail-config.yml:/etc/promtail/config.yml
-      - ./logs/delivery-api.log:/var/logs/delivery-api.log
+      - ./logs:/var/logs
     command: -config.file=/etc/promtail/config.yml
     depends_on:
       - loki
     networks:
-      - observability
+      - prod-network
 
   grafana:
     image: grafana/grafana:latest
@@ -81,4 +105,4 @@ services:
       - loki
       - zipkin
     networks:
-      - observability
+      - prod-network
