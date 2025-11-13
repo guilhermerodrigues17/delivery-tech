@@ -3,6 +3,8 @@ package com.deliverytech.delivery_api.service.impl;
 import com.deliverytech.delivery_api.dto.request.RestaurantRequestDto;
 import com.deliverytech.delivery_api.dto.request.RestaurantStatusUpdateDto;
 import com.deliverytech.delivery_api.dto.response.RestaurantResponseDto;
+import com.deliverytech.delivery_api.events.restaurant.RestaurantCreatedEvent;
+import com.deliverytech.delivery_api.events.restaurant.RestaurantUpdateEvent;
 import com.deliverytech.delivery_api.exceptions.BusinessException;
 import com.deliverytech.delivery_api.exceptions.ConflictException;
 import com.deliverytech.delivery_api.exceptions.ResourceNotFoundException;
@@ -11,6 +13,7 @@ import com.deliverytech.delivery_api.model.Product;
 import com.deliverytech.delivery_api.model.Restaurant;
 import com.deliverytech.delivery_api.repository.RestaurantRepository;
 import com.deliverytech.delivery_api.security.SecurityService;
+import com.deliverytech.delivery_api.validation.RestaurantValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -20,6 +23,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.*;
 
 import java.math.BigDecimal;
@@ -41,6 +45,12 @@ class RestaurantServiceImplTest {
 
     @Mock
     private SecurityService securityService;
+
+    @Mock
+    private RestaurantValidator restaurantValidator;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private RestaurantServiceImpl restaurantService;
@@ -64,7 +74,8 @@ class RestaurantServiceImplTest {
         @Test
         @DisplayName("Should throw ConflictException when restaurant name already exists")
         void should_ThrowConflictException_When_NameAlreadyExists() {
-            when(restaurantRepository.existsByName(requestDto.getName())).thenReturn(true);
+            doThrow(new ConflictException("Nome de restaurante já está em uso")).when(restaurantValidator)
+                    .validateName(requestDto.getName());
 
             ConflictException exception = assertThrows(ConflictException.class, () -> {
                 restaurantService.createRestaurant(requestDto);
@@ -72,7 +83,7 @@ class RestaurantServiceImplTest {
 
             assertEquals("Nome de restaurante já está em uso", exception.getMessage());
 
-            verify(restaurantRepository).existsByName(requestDto.getName());
+            verify(restaurantValidator, times(1)).validateName(requestDto.getName());
             verify(restaurantRepository, never()).save(any(Restaurant.class));
             verify(mapper, never()).toEntity(any(RestaurantRequestDto.class));
         }
@@ -98,18 +109,18 @@ class RestaurantServiceImplTest {
                     "10.00"
             );
 
-            when(restaurantRepository.existsByName(requestDto.getName())).thenReturn(false);
+            doNothing().when(restaurantValidator).validateName(requestDto.getName());
             when(mapper.toEntity(requestDto)).thenReturn(restaurantFromMapper);
             when(restaurantRepository.save(any(Restaurant.class))).thenReturn(savedRestaurant);
             when(mapper.toDto(savedRestaurant)).thenReturn(expectedResult);
+            when(securityService.getCurrentUser()).thenReturn(Optional.empty());
+            doNothing().when(eventPublisher).publishEvent(any(RestaurantCreatedEvent.class));
 
             RestaurantResponseDto result = restaurantService.createRestaurant(requestDto);
-
 
             assertNotNull(result);
             assertEquals(expectedResult.id(), result.id());
             assertEquals(expectedResult.name(), result.name());
-
 
             ArgumentCaptor<Restaurant> restaurantCaptor = ArgumentCaptor.forClass(Restaurant.class);
             verify(restaurantRepository).save(restaurantCaptor.capture());
@@ -117,6 +128,9 @@ class RestaurantServiceImplTest {
             Restaurant capturedRestaurant = restaurantCaptor.getValue();
             assertEquals(expectedResult.phoneNumber(), capturedRestaurant.getPhoneNumber());
             assertEquals(expectedResult.active(), capturedRestaurant.getActive());
+
+            verify(restaurantValidator, times(1)).validateName(requestDto.getName());
+            verify(eventPublisher, times(1)).publishEvent(any(RestaurantCreatedEvent.class));
         }
     }
 
@@ -166,7 +180,8 @@ class RestaurantServiceImplTest {
         @DisplayName("Should throw ConflictException when new name is already in use")
         void should_ThrowConflictException_When_NewNameIsDuplicated() {
             when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(existingRestaurant));
-            when(restaurantRepository.existsByName(updateDto.getName())).thenReturn(true);
+            doThrow(new ConflictException("Nome de restaurante já está em uso")).when(restaurantValidator)
+                    .validateName(updateDto.getName());
 
             ConflictException exception = assertThrows(ConflictException.class, () -> {
                 restaurantService.updateRestaurant(restaurantId.toString(), updateDto);
@@ -175,7 +190,7 @@ class RestaurantServiceImplTest {
             assertEquals("Nome de restaurante já está em uso", exception.getMessage());
 
             verify(restaurantRepository).findById(restaurantId);
-            verify(restaurantRepository).existsByName(updateDto.getName());
+            verify(restaurantValidator, times(1)).validateName(updateDto.getName());
             verify(restaurantRepository, never()).save(any(Restaurant.class));
         }
 
@@ -209,7 +224,7 @@ class RestaurantServiceImplTest {
         @DisplayName("Should update successfully when name changes")
         void should_UpdateSuccessfully_When_NameIsChanged() {
             when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(existingRestaurant));
-            when(restaurantRepository.existsByName(updateDto.getName())).thenReturn(false);
+            doNothing().when(restaurantValidator).validateName(updateDto.getName());
 
             when(restaurantRepository.save(any(Restaurant.class))).thenAnswer(inv -> inv.getArgument(0));
             when(mapper.toDto(any(Restaurant.class))).thenAnswer(inv -> {
@@ -220,6 +235,9 @@ class RestaurantServiceImplTest {
                         mutated.getDeliveryTax().toString()
                 );
             });
+
+            when(securityService.getCurrentUser()).thenReturn(Optional.empty());
+            doNothing().when(eventPublisher).publishEvent(any(RestaurantUpdateEvent.class));
 
             RestaurantResponseDto result = restaurantService.updateRestaurant(restaurantId.toString(), updateDto);
 
@@ -233,6 +251,9 @@ class RestaurantServiceImplTest {
             Restaurant capturedRestaurant = restaurantCaptor.getValue();
             assertEquals("11911112222", capturedRestaurant.getPhoneNumber());
             assertEquals(updateDto.getName(), capturedRestaurant.getName());
+
+            verify(restaurantValidator, times(1)).validateName(updateDto.getName());
+            verify(eventPublisher, times(1)).publishEvent(any(RestaurantUpdateEvent.class));
         }
     }
 

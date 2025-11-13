@@ -15,6 +15,7 @@ import com.deliverytech.delivery_api.security.SecurityService;
 import com.deliverytech.delivery_api.service.ConsumerService;
 import com.deliverytech.delivery_api.service.ProductService;
 import com.deliverytech.delivery_api.service.RestaurantService;
+import com.deliverytech.delivery_api.validation.OrderValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -24,6 +25,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -60,6 +62,15 @@ class OrderServiceImplTest {
 
     @Mock
     private SecurityService securityService;
+
+    @Mock
+    private MetricsServiceImpl metricsService;
+
+    @Mock
+    private OrderValidator orderValidator;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -222,24 +233,31 @@ class OrderServiceImplTest {
 
             Restaurant restaurant1 = new Restaurant();
             restaurant1.setId(restaurantId);
+            restaurant1.setDeliveryTax(new BigDecimal("10.00"));
 
             Restaurant restaurant2 = new Restaurant();
             restaurant2.setId(UUID.randomUUID());
 
             Product product = new Product();
             product.setId(productId);
+            product.setName("Product");
             product.setRestaurant(restaurant2);
+            product.setPrice(new BigDecimal("10.00"));
 
             when(consumerService.findById(consumerId)).thenReturn(consumer);
             when(restaurantService.findById(restaurantId)).thenReturn(restaurant1);
             when(productService.findProductEntityById(productId.toString())).thenReturn(product);
 
+            String expectedMessage = String.format("O produto '%s' (%s) não pertence ao restaurante informado.",
+                    product.getName(), product.getId());
+            BusinessException businessException = new BusinessException(expectedMessage);
+
+            doThrow(businessException).when(orderValidator).validateProductBelongsRestaurant(restaurant1, product);
+
             BusinessException exception = assertThrows(BusinessException.class, () -> {
                 orderService.createOrder(orderRequest);
             });
 
-            String expectedMessage = String.format("O produto '%s' (%s) não pertence ao restaurante informado.",
-                    product.getName(), product.getId());
             assertEquals(expectedMessage, exception.getMessage());
 
             verify(orderRepository, never()).save(any(Order.class));

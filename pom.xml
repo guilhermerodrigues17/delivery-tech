@@ -280,6 +280,10 @@
                                 <exclude>**/dto/**</exclude>
                                 <exclude>**/exceptions/**</exclude>
                                 <exclude>**/mapper/*Impl.class</exclude>
+                                <exclude>**/listeners/**</exclude>
+                                <exclude>**/events/**</exclude>
+                                <exclude>**/aop/**</exclude>
+                                <exclude>**/actuator/**</exclude>
                             </excludes>
                         </configuration>
                     </execution>

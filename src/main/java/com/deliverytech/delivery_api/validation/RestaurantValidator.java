@@ -18,7 +18,7 @@ public class RestaurantValidator {
     public void validateName(String name) {
         tracer.currentSpan().tag("restaurant.name", name);
 
-        if (restaurantRepository.findByName(name).isPresent()) {
+        if (restaurantRepository.existsByName(name)) {
             tracer.currentSpan().tag("validation.result", "failed");
             throw new ConflictException("Nome de restaurante já está em uso");
         }
