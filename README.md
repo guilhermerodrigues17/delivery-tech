@@ -1,5 +1,7 @@
 # Delivery Tech
 
+[![Delivery API - CI/CD pipeline](https://github.com/guilhermerodrigues17/delivery-tech/actions/workflows/ci-pipeline.yml/badge.svg)](https://github.com/guilhermerodrigues17/delivery-tech/actions/workflows/ci-pipeline.yml)
+
 Um projeto de backend para um sistema de gerenciamento de entregas (delivery),
 desenvolvido em Java 21 com Spring Boot 3.
 
@@ -10,32 +12,49 @@ objetivo é criar um sistema robusto e escalável que sirva como a base para uma
 aplicação de delivery, similar ao iFood. A API permite o gerenciamento de
 clientes, restaurantes, produtos e pedidos.
 
+---
+
 ## 🚀 Tecnologias Utilizadas
 
-- **Java 21 LTS** (versão mais recente)
-- **Spring Boot 3.5.x**
-    - **Spring Web:** Para a construção de APIs REST;
-    - **Spring Data JPA:** Para a persistência de dados;
-    - **Spring Boot Validation:** Para validação dos dados de entrada;
-    - **Spring Security:** Para autenticação e autorização;
-    - **Spring Boot DevTools:** Para facilitar o desenvolvimento.
-- **H2 Database:** Banco de dados em memória para desenvolvimento e testes;
-- **Lombok:** Para reduzir código boilerplate em classes de modelo;
-- **MapStruct:** Para mapeamento de DTOs e entidades;
-- **Spring Doc:** Para documentação interativa no padrão OpenAPI;
-- **Maven:** Gerenciador de dependências e build do projeto.
+Este projeto foi construído com uma stack moderna de Java e DevOps:
+
+**Aplicação (Core):**
+* **Java 21 LTS**;
+* **Spring Boot 3** (Web, Data JPA, Validation, Security, Test);
+
+**Banco de Dados e Cache:**
+* **PostgreSQL:** Banco de dados relacional de produção;
+* **Redis:** Cache distribuído para otimização de performance;
+* **H2 Database:** Banco em memória (apenas para testes automatizados).
+
+**Observabilidade (Stack PLG/T):**
+* **Prometheus:** Coleta de Métricas (ex: timers, counters);
+* **Loki:** Coleta de Logs (JSON estruturado);
+* **Grafana:** Interface de visualização (Dashboards) para Logs e Métricas;
+* **Zipkin (via Tracing):** Rastreamento distribuído de requisições (Spans).
+
+**DevOps (CI/CD e Empacotamento):**
+* **Docker & Docker Compose:** Containerização e orquestração de todos os serviços;
+* **GitHub Actions:** Pipeline de CI/CD para testes, build e deploy automatizados.
+
+---
 
 ## ✨ Features
 
-- CRUD completo de Clientes (``Consumer``);
-- CRUD completo de Restaurantes (``Restaurant``);
-- CRUD completo de Produtos (``Product``);
+- **CRUD** completo de Clientes (``Consumer``);
+- **CRUD** completo de Restaurantes (``Restaurant``);
+- **CRUD** completo de Produtos (``Product``);
 - Sistema de criação e atualização de status de Pedidos (``Order``);
 - Endpoints de recursos administrativos, com relatórios de vendas, atividades, etc;
 - Sistema de autenticação JWT e autorização RBAC;
 - Tratamento de exceções e validações de dados;
 - Documentação interativa no padrão OpenAPI, com Scalar UI;
-- Endpoints de monitoramento de saúde da aplicação.
+- Endpoints de monitoramento de saúde da aplicação;
+- **Observabilidade Completa**: a API expõe métricas de negócio (pedidos, transições de status) e de sistema (JVM) para o Prometheus.
+- **Logging Estruturado:** logs são gerados em JSON (incluindo logs de AUDIT) e enviados para o Loki.
+- **Tracing Distribuído:** requisições críticas (como validações de serviço) são rastreadas com Spans customizados no Zipkin.
+- **Cache de Alta Performance:** métodos de leitura (ex: `findById`) são cacheados usando Redis para reduzir a carga no banco de dados.
+- **Ambientes de Docker:** o projeto é totalmente containerizado, com perfis separados para `dev` (IntelliJ) e `prod` (Docker-nativo).
 
 ## 📋 Endpoints
 
@@ -92,26 +111,45 @@ clientes, restaurantes, produtos e pedidos.
 - ``GET /reports/active-consumers`` - Lista clientes com mais pedidos;
 - ``GET /reports/orders-by-period`` - Listar pedidos por período e status.
 
-## ⚙️ Como executar o projeto
+---
 
-Siga os passos abaixo para rodar o projeto no seu ambiente de desenvolvimento.
+## ⚙️ Como Executar o Projeto
 
-**Pré-requisitos:** JDK 21 instalado
+Existem dois modos de executar a aplicação. Ambos requerem o Docker Desktop (ou Docker Engine/Compose) instalado.
 
-```Bash
+### 1. Ambiente de Desenvolvimento (Recomendado)
 
-# 1. Clone o repositório
-git clone https://github.com/guilhermerodrigues17/delivery-tech.git
+A API roda localmente (no IntelliJ/VSCode), conectando-se aos serviços de infra (Postgres, Redis, Grafana) que rodam no Docker.
 
-# 2. Acesse a pasta do projeto
-cd delivery-tech
+```bash
 
-# 3. Instale as dependências
-./mvnw clean install
+# 1. (Primeira vez) Crie a pasta de logs (Permission denied fix)
+sudo mkdir logs
+sudo chown -R $USER:$USER logs
 
-# 4. Execute a aplicação spring boot
-./mvnw spring-boot:run
+# 2. Inicie TODA a infraestrutura (DB, Cache, Observabilidade)
+docker compose -f docker-compose.dev.yml up -d
 
+# 3. Abra o projeto no seu IntelliJ/IDE e clique "Run" (Play).
+# (A API irá carregar o perfil 'dev' e se conectar ao localhost:5432)
+# Pode ser necessário fornecer um env para JWT_SECRET para a aplicação rodar corretamente
+```
+
+### 2. Ambiente de Produção (Simulação Completa)
+
+Este modo simula o deploy real. Ele constrói a imagem Docker da API e roda tudo dentro de contêineres, usando o perfil prod.
+
+```bash
+# 1. (Primeira vez) Crie a pasta de logs
+sudo mkdir logs
+sudo chown -R $USER:$USER logs
+
+# 2. (Primeira vez) Crie seus segredos locais
+cp .env.example .env
+nano .env # (Edite o .env com seus segredos de DB e JWT)
+
+# 3. Construa as imagens e inicie todos os serviços
+docker compose up --build
 ```
 
 Após a inicialização, a aplicação estará disponível em `http://localhost:8080`
@@ -128,7 +166,7 @@ Ao executar os testes, é **necessário** configurar a variável ``JWT_SECRET``.
 ```bash
 
 # Executa todos os testes
-JWT_SECRET={YOUR_JWT_SECRET_HERE} ./mvnw clean test
+./mvnw clean test
 
 ```
 
@@ -142,11 +180,32 @@ Para rodar os testes e verificar a cobertura, utilize o comando verify. Este com
 ```bash
 
 # Executa os testes e verifica a cobertura
-JWT_SECRET={YOUR_JWT_SECRET_HERE} ./mvnw clean verify
+./mvnw clean verify
 
 ```
 Após a execução (mesmo que falhe), você pode visualizar o relatório HTML completo no seu navegador, abrindo o seguinte arquivo:
 [`/target/site/jacoco/index.html`](/target/site/jacoco/index.html)
+
+## 🚀 Pipeline de CI/CD
+
+Este repositório usa **GitHub Actions** para automatizar todo o ciclo de vida da aplicação. O pipeline (definido em `.github/workflows/ci-pipeline.yml`) é acionado em todo `push` ou `pull_request` para a branch `main` e executa 3 jobs sequenciais:
+
+1.  **Build, Teste e Verificação (Job 1):**
+    * Configura o Java 21 e faz cache das dependências do Maven;
+    * [Roda `./mvnw clean verify` com o perfil `test`, executando todos os testes unitários e de integração contra um banco H2 em memória.
+
+2.  **Buildar e Publicar Imagem Docker (Job 2):**
+    * (Se os testes passarem) Constrói a imagem Docker de produção usando o `Dockerfile` multi-stage;
+    * Faz login no GitHub Container Registry (`ghcr.io`);
+    * Publica a nova imagem tagueada (ex: `ghcr.io/guilhermerodrigues17/delivery-tech:latest`).
+
+3.  **Deploy para Produção (Job 3):**
+    * (Se a imagem for publicada) Conecta-se ao servidor via SSH usando os segredos do repositório;
+    * Cria o arquivo `.env` no servidor com as credenciais do banco e JWT;
+    * Executa `docker compose pull` e `docker compose up -d --force-recreate delivery-api` para atualizar a aplicação que está rodando.
+
+---
+
 ## 📚 Documentação da API (Swagger UI)
 
 Para facilitar o desenvolvimento e a integração, a API está 100% documentada usando o padrão OpenAPI.
