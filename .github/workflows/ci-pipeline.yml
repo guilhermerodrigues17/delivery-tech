@@ -10,10 +10,11 @@ on:
 
 jobs:
   build-and-test:
+    name: Build and run tests
     runs-on: ubuntu-latest
 
     steps:
-      - name: 1. Download the code
+      - name: 1. Clone the code
         uses: actions/checkout@v4
 
       - name: 2. Download JDK 21
@@ -22,7 +23,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: 3. Configurando o cache do Maven
+      - name: 3. Configuring Maven cache
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
@@ -30,7 +31,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: 4. Compilar e Rodar Testes com Maven
+      - name: 4. Compile and run tests with Maven
         run: ./mvnw -B clean verify -Dspring.profiles.active=test
 
   build-and-push-docker:
@@ -71,3 +72,32 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    name: Deploy to the production environment
+    runs-on: ubuntu-latest
+
+    needs: build-and-push-docker
+
+    steps:
+      - name: 1. Deploying via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+          script: |
+            cd /opt/delivery-api
+            
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" > .env
+            echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
+            echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
+            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+
+            docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+            
+            docker compose pull
+            docker compose up -d --force-recreate delivery-api
+
+            docker image prune -f
